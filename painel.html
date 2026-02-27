@@ -62,6 +62,14 @@
   </div>
 
   <!-- Filtro -->
+  <!-- Filtro por Tipo -->
+<div class="mb-3 d-flex gap-2 flex-wrap" id="filtrosTipo">
+  <button onclick="filtrarTipo(null, this)" class="btn btn-outline-secondary btn-sm active">Todos</button>
+  <button onclick="filtrarTipo('promotores', this)" class="btn btn-outline-success btn-sm">Promotores</button>
+  <button onclick="filtrarTipo('neutros', this)" class="btn btn-outline-warning btn-sm">Neutros</button>
+  <button onclick="filtrarTipo('detratores', this)" class="btn btn-outline-danger btn-sm">Detratores</button>
+</div>
+  
   <div class="row mb-3">
     <div class="col-md-3">
       <input type="date" id="dataInicio" class="form-control">
@@ -105,6 +113,7 @@
 <script src="config.js"></script>
 
 <script>
+  let filtroTipoAtual = null;
 
 fetch("layout.html")
   .then(res => res.text())
@@ -112,7 +121,7 @@ fetch("layout.html")
     document.getElementById("menuLateral").innerHTML = html;
   });
 
-async function carregarPainel(dataInicio = null, dataFim = null) {
+async function carregarPainel(dataInicio = null, dataFim = null, tipo = null) {
   try {
 
     let query = `
@@ -123,6 +132,18 @@ async function carregarPainel(dataInicio = null, dataFim = null) {
 
     if (dataInicio) query += `&created_at=gte.${dataInicio}T00:00:00`;
     if (dataFim) query += `&created_at=lte.${dataFim}T23:59:59`;
+
+    if (tipo === "promotores") {
+      query += `&indicacao=gte.9`;
+    }
+
+    if (tipo === "neutros") {
+      query += `&indicacao=gte.7&indicacao=lte.8`;
+    }
+
+    if (tipo === "detratores") {
+      query += `&indicacao=lte.6`;
+    }
 
     const res = await fetch(query, {
       headers: {
@@ -197,7 +218,8 @@ function preencherTabela(dados) {
 function aplicarFiltro() {
   carregarPainel(
     document.getElementById('dataInicio').value || null,
-    document.getElementById('dataFim').value || null
+    document.getElementById('dataFim').value || null,
+    filtroTipoAtual
   );
 }
 
@@ -206,7 +228,23 @@ function limparFiltro() {
   document.getElementById('dataFim').value = "";
   filtroMesAtual();
 }
+function filtrarTipo(tipo, botao) {
+  filtroTipoAtual = tipo;
 
+  // Remove ativo
+  document.querySelectorAll("#filtrosTipo button").forEach(btn => {
+    btn.classList.remove("active");
+  });
+
+  // Ativa o clicado
+  if (botao) botao.classList.add("active");
+
+  const inicio = document.getElementById('dataInicio').value || null;
+  const fim = document.getElementById('dataFim').value || null;
+
+  carregarPainel(inicio, fim, tipo);
+}
+  
 function filtroMesAtual() {
   const hoje = new Date();
   const primeiro = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
@@ -220,7 +258,7 @@ function filtroMesAtual() {
   document.getElementById("dataInicio").value = inicio;
   document.getElementById("dataFim").value = fim;
 
-  carregarPainel(inicio, fim);
+  carregarPainel(inicio, fim, filtroTipoAtual);
 }
 
 document.addEventListener("DOMContentLoaded", () => {
