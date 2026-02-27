@@ -2,7 +2,7 @@ let graficoEvolucao;
 let graficoDistribuicao;
 let graficoSegmento;
 
-/* ===================== UTIL ===================== */
+/* ================= UTIL ================= */
 
 function formatarISO(data) {
   return data.toISOString().split("T")[0];
@@ -23,7 +23,7 @@ function ultimos30Dias() {
   document.getElementById("dataFim").value = formatarISO(hoje);
 }
 
-/* ===================== FETCH ===================== */
+/* ================= FETCH ================= */
 
 async function buscarDados() {
 
@@ -45,10 +45,9 @@ async function buscarDados() {
   return await res.json();
 }
 
-/* ===================== PROCESSAMENTO ===================== */
+/* ================= KPIs ================= */
 
 function calcularNPS(lista) {
-
   let promotores = 0;
   let detratores = 0;
 
@@ -58,23 +57,7 @@ function calcularNPS(lista) {
   });
 
   const total = lista.length;
-
-  return total > 0
-    ? Math.round(((promotores - detratores) / total) * 100)
-    : 0;
-}
-
-function agruparPorDia(lista) {
-
-  const grupos = {};
-
-  lista.forEach(d => {
-    const dia = d.created_at.split("T")[0];
-    if (!grupos[dia]) grupos[dia] = [];
-    grupos[dia].push(d);
-  });
-
-  return grupos;
+  return total ? Math.round(((promotores - detratores) / total) * 100) : 0;
 }
 
 function atualizarKPIs(dados) {
@@ -97,11 +80,17 @@ function atualizarKPIs(dados) {
   document.getElementById("kpiQualidade").textContent = mediaQualidade;
 }
 
-/* ===================== GRÁFICOS ===================== */
+/* ================= GRÁFICOS ================= */
 
 function criarGraficoEvolucao(dados) {
 
-  const grupos = agruparPorDia(dados);
+  const grupos = {};
+  dados.forEach(d => {
+    const dia = d.created_at.split("T")[0];
+    if (!grupos[dia]) grupos[dia] = [];
+    grupos[dia].push(d);
+  });
+
   const labels = Object.keys(grupos).sort();
   const valores = labels.map(dia => calcularNPS(grupos[dia]));
 
@@ -114,20 +103,15 @@ function criarGraficoEvolucao(dados) {
       data: {
         labels,
         datasets: [{
-          label: "NPS",
           data: valores,
           borderColor: "#2563eb",
           backgroundColor: "rgba(37,99,235,0.15)",
           fill: true,
-          tension: 0.4,
-          pointRadius: 4,
-          pointBackgroundColor: "#2563eb"
+          tension: 0.4
         }]
       },
       options: {
-        scales: {
-          y: { min: 0, max: 100 }
-        },
+        scales: { y: { min: 0, max: 100 } },
         plugins: { legend: { display: false } }
       }
     }
@@ -137,7 +121,6 @@ function criarGraficoEvolucao(dados) {
 function criarDistribuicao(dados) {
 
   const contagem = Array(11).fill(0);
-
   dados.forEach(d => {
     const nota = Number(d.indicacao);
     if (!isNaN(nota)) contagem[nota]++;
@@ -153,11 +136,9 @@ function criarDistribuicao(dados) {
         labels: ["0","1","2","3","4","5","6","7","8","9","10"],
         datasets: [{
           data: contagem,
-          backgroundColor: contagem.map((_, i) => {
-            if (i >= 9) return "#16a34a";
-            if (i >= 7) return "#f59e0b";
-            return "#dc2626";
-          })
+          backgroundColor: contagem.map((_, i) =>
+            i >= 9 ? "#16a34a" : i >= 7 ? "#f59e0b" : "#dc2626"
+          )
         }]
       },
       options: { plugins: { legend: { display: false } } }
@@ -193,20 +174,18 @@ function criarSegmento(dados) {
   );
 }
 
-/* ===================== NUVEM DE PALAVRAS ===================== */
+/* ================= NUVEM ================= */
 
 function gerarWordCloud(dados) {
 
-  const stopwords = [
-    "de","da","do","das","dos","e","é","foi","muito","muita",
-    "para","pra","o","a","os","as","um","uma","no","na",
-    "com","que","mais","mas","já","eu","meu","minha"
-  ];
+  const container = document.getElementById("wordCloud");
+  container.innerHTML = "";
+
+  const stopwords = ["de","da","do","e","para","pra","com","que","mais","muito","uma","um"];
 
   const contador = {};
 
   dados.forEach(item => {
-
     if (!item.sugestao) return;
 
     const palavras = item.sugestao
@@ -217,37 +196,35 @@ function gerarWordCloud(dados) {
       .split(" ");
 
     palavras.forEach(p => {
-
       if (p.length < 4) return;
       if (stopwords.includes(p)) return;
-
       contador[p] = (contador[p] || 0) + 1;
-
     });
-
   });
 
   const lista = Object.entries(contador)
     .sort((a,b) => b[1] - a[1])
-    .slice(0, 40);
+    .slice(0, 50);
 
-  WordCloud(document.getElementById('wordCloud'), {
+  if (!lista.length) {
+    container.innerHTML = "<p class='text-muted'>Sem palavras no período.</p>";
+    return;
+  }
+
+  WordCloud(container, {
     list: lista,
-    gridSize: 8,
-    weightFactor: 10,
-    fontFamily: 'Segoe UI',
-    color: function () {
-      return ["#1e3a8a","#2563eb","#0ea5e9","#16a34a","#f59e0b"]
-        [Math.floor(Math.random()*5)];
-    },
-    backgroundColor: '#ffffff'
+    gridSize: 6,
+    weightFactor: 12,
+    backgroundColor: "#ffffff"
   });
 }
-/* ===================== INICIALIZAÇÃO ===================== */
+
+/* ================= INIT ================= */
 
 async function atualizarGraficos() {
   const dados = await buscarDados();
   atualizarKPIs(dados);
+  gerarWordCloud(dados);
   criarGraficoEvolucao(dados);
   criarDistribuicao(dados);
   criarSegmento(dados);
