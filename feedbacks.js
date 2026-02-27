@@ -1,5 +1,5 @@
 let pagina = 1;
-const limite = 10;
+const limite = 50;
 let dadosAtuais = [];
 let colunaOrdenacao = "created_at";
 let direcaoOrdenacao = "desc";
