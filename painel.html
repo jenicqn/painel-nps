@@ -217,16 +217,23 @@ function preencherTabela(dados) {
   tbody.innerHTML = "";
 
   dados.slice(0, 20).forEach(r => {
+
+    const badge = (valor) => {
+      if (valor >= 5) return `<span class="badge badge-5">${valor}</span>`;
+      if (valor === 4) return `<span class="badge badge-4">${valor}</span>`;
+      return `<span class="badge badge-3">${valor}</span>`;
+    };
+
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td>${new Date(r.created_at).toLocaleDateString('pt-BR')}</td>
       <td>${r.nome || '-'}</td>
       <td>${r.sugestao || '-'}</td>
       <td>${r.morador || '-'}</td>
-      <td>${r.qualidade || '-'}</td>
-      <td>${r.tempo || '-'}</td>
-      <td>${r.variedade || '-'}</td>
-      <td>${r.custobeneficio ?? '-'}</td>
+      <td>${badge(r.qualidade ?? '-')}</td>
+      <td>${badge(r.tempo ?? '-')}</td>
+      <td>${badge(r.variedade ?? '-')}</td>
+      <td>${badge(r.custobeneficio ?? '-')}</td>
     `;
     tbody.appendChild(tr);
   });
