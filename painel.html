@@ -143,7 +143,7 @@ fetch("layout.html")
   });
 
 const SUPABASE_URL = 'https://kwktdbinfadztnkghuul.supabase.co';
-const SUPABASE_ANON_KEY = 'SUA_ANON_KEY_AQUI';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxlZXpwbXBtcWtpb2N2dnBjd3FhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE5NTI2NTUsImV4cCI6MjA4NzUyODY1NX0.M-TpjLCmwA6jyUFXG33o-L8O_1o84Ap4GM9vtxAa4KQ';
 
 const headers = {
   apikey: SUPABASE_ANON_KEY,
@@ -167,7 +167,14 @@ async function carregarPainel(dataInicio = null, dataFim = null) {
       query += `&created_at=lte.${dataFim}T23:59:59`;
     }
 
-    const res = await fetch(query, { headers });
+    const res = await fetch(query, {
+      method: "GET",
+      headers: {
+        "apikey": SUPABASE_ANON_KEY,
+        "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
+        "Content-Type": "application/json"
+      }
+    });
 
     if (!res.ok) throw new Error("Erro ao buscar dados");
 
