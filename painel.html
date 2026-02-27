@@ -4,135 +4,102 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Painel Smash do Cabo</title>
+
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-
-  <style>
-    body {
-      margin: 0;
-      display: flex;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: #f4f6fa;
-    }
-
-    .content {
-      flex: 1;
-      padding: 30px;
-    }
-
-    .topbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 20px;
-    }
-
-    .card-panel {
-      border-left: 5px solid #ccc;
-      background-color: #fff;
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.05);
-    }
-
-    .card-panel.nps        { border-color: #16a34a; }
-    .card-panel.promotores { border-color: #22c55e; }
-    .card-panel.neutros    { border-color: #facc15; }
-    .card-panel.detratores { border-color: #dc2626; }
-    .card-panel.respostas  { border-color: #3b82f6; }
-  </style>
+  <link rel="stylesheet" href="painel.css">
 </head>
 
 <body>
 
-  <div id="menuLateral"></div>
+<div id="menuLateral"></div>
 
-  <div class="content">
+<div class="content">
 
-    <div class="topbar">
-      <h3>Painel Smash do Cabo</h3>
-      <div>
-        <span>Olá, <strong>Jeniffer Adm</strong></span>
-        <button onclick="logout()" class="btn btn-danger btn-sm ms-3">Sair</button>
-      </div>
+  <div class="topbar">
+    <h3>Painel Smash do Cabo</h3>
+    <div>
+      <span>Olá, <strong>Jeniffer Adm</strong></span>
+      <button onclick="logout()" class="btn btn-danger btn-sm ms-3">Sair</button>
     </div>
-
-    <!-- KPIs -->
-    <div class="row g-4 mb-4">
-      <div class="col-md-2">
-        <div class="card-panel nps">
-          <strong>NPS</strong>
-          <div id="npsGeral">-</div>
-        </div>
-      </div>
-
-      <div class="col-md-2">
-        <div class="card-panel promotores">
-          <strong>Promotores</strong>
-          <div id="npsPromotores">-</div>
-        </div>
-      </div>
-
-      <div class="col-md-2">
-        <div class="card-panel neutros">
-          <strong>Neutros</strong>
-          <div id="npsNeutros">-</div>
-        </div>
-      </div>
-
-      <div class="col-md-2">
-        <div class="card-panel detratores">
-          <strong>Detratores</strong>
-          <div id="npsDetratores">-</div>
-        </div>
-      </div>
-
-      <div class="col-md-2">
-        <div class="card-panel respostas">
-          <strong>Respostas</strong>
-          <div id="totalRespostas">-</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Filtro -->
-    <div class="row mb-3">
-      <div class="col-md-3">
-        <input type="date" id="dataInicio" class="form-control">
-      </div>
-      <div class="col-md-3">
-        <input type="date" id="dataFim" class="form-control">
-      </div>
-      <div class="col-md-2">
-        <button onclick="aplicarFiltro()" class="btn btn-primary w-100">
-          Filtrar
-        </button>
-      </div>
-      <div class="col-md-2">
-        <button onclick="limparFiltro()" class="btn btn-outline-secondary w-100">
-          Limpar
-        </button>
-      </div>
-    </div>
-
-    <h5>Últimas Respostas</h5>
-
-    <table class="table table-bordered">
-      <thead class="table-light">
-        <tr>
-          <th>Data</th>
-          <th>Nome</th>
-          <th>Sugestão</th>
-          <th>Morador</th>
-          <th>Qualidade</th>
-          <th>Tempo</th>
-          <th>Variedade</th>
-          <th>Custo-benefício</th>
-        </tr>
-      </thead>
-      <tbody id="ultimasRespostas"></tbody>
-    </table>
-
   </div>
+
+  <!-- KPIs -->
+  <div class="row g-4 mb-4">
+    <div class="col-md-2">
+      <div class="card-panel nps">
+        <div class="kpi-title">NPS</div>
+        <div id="npsGeral" class="kpi-value">-</div>
+      </div>
+    </div>
+
+    <div class="col-md-2">
+      <div class="card-panel promotores">
+        <div class="kpi-title">Promotores</div>
+        <div id="npsPromotores" class="kpi-value">-</div>
+      </div>
+    </div>
+
+    <div class="col-md-2">
+      <div class="card-panel neutros">
+        <div class="kpi-title">Neutros</div>
+        <div id="npsNeutros" class="kpi-value">-</div>
+      </div>
+    </div>
+
+    <div class="col-md-2">
+      <div class="card-panel detratores">
+        <div class="kpi-title">Detratores</div>
+        <div id="npsDetratores" class="kpi-value">-</div>
+      </div>
+    </div>
+
+    <div class="col-md-2">
+      <div class="card-panel respostas">
+        <div class="kpi-title">Respostas</div>
+        <div id="totalRespostas" class="kpi-value">-</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filtro -->
+  <div class="row mb-3">
+    <div class="col-md-3">
+      <input type="date" id="dataInicio" class="form-control">
+    </div>
+    <div class="col-md-3">
+      <input type="date" id="dataFim" class="form-control">
+    </div>
+    <div class="col-md-2">
+      <button onclick="aplicarFiltro()" class="btn btn-primary w-100">
+        Filtrar
+      </button>
+    </div>
+    <div class="col-md-2">
+      <button onclick="limparFiltro()" class="btn btn-outline-secondary w-100">
+        Limpar
+      </button>
+    </div>
+  </div>
+
+  <h5 class="mb-3">Últimas Respostas</h5>
+
+  <table class="table-modern">
+    <thead>
+      <tr>
+        <th>Data</th>
+        <th>Nome</th>
+        <th>Sugestão</th>
+        <th>Morador</th>
+        <th>Qualidade</th>
+        <th>Tempo</th>
+        <th>Variedade</th>
+        <th>Custo-benefício</th>
+      </tr>
+    </thead>
+    <tbody id="ultimasRespostas"></tbody>
+  </table>
+
+</div>
 
 <script>
 
@@ -143,12 +110,7 @@ fetch("layout.html")
   });
 
 const SUPABASE_URL = 'https://leezpmpmqkiocvvpcwqa.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxlZXpwbXBtcWtpb2N2dnBjd3FhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE5NTI2NTUsImV4cCI6MjA4NzUyODY1NX0.M-TpjLCmwA6jyUFXG33o-L8O_1o84Ap4GM9vtxAa4KQ';
-
-const headers = {
-  apikey: SUPABASE_ANON_KEY,
-  Authorization: `Bearer ${SUPABASE_ANON_KEY}`
-};
+const SUPABASE_ANON_KEY = 'SUA_CHAVE_AQUI';
 
 async function carregarPainel(dataInicio = null, dataFim = null) {
   try {
@@ -159,20 +121,13 @@ async function carregarPainel(dataInicio = null, dataFim = null) {
       &order=created_at.desc
     `.replace(/\s+/g,'');
 
-    if (dataInicio) {
-      query += `&created_at=gte.${dataInicio}T00:00:00`;
-    }
-
-    if (dataFim) {
-      query += `&created_at=lte.${dataFim}T23:59:59`;
-    }
+    if (dataInicio) query += `&created_at=gte.${dataInicio}T00:00:00`;
+    if (dataFim) query += `&created_at=lte.${dataFim}T23:59:59`;
 
     const res = await fetch(query, {
-      method: "GET",
       headers: {
-        "apikey": SUPABASE_ANON_KEY,
-        "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
-        "Content-Type": "application/json"
+        apikey: SUPABASE_ANON_KEY,
+        Authorization: `Bearer ${SUPABASE_ANON_KEY}`
       }
     });
 
@@ -187,7 +142,7 @@ async function carregarPainel(dataInicio = null, dataFim = null) {
     console.error("Erro:", err);
   }
 }
-  
+
 function atualizarKPIs(dados) {
   let promotores = 0;
   let neutros = 0;
@@ -200,7 +155,6 @@ function atualizarKPIs(dados) {
   });
 
   const total = dados.length;
-
   const nps = total > 0
     ? Math.round(((promotores - detratores) / total) * 100)
     : 0;
@@ -216,33 +170,35 @@ function preencherTabela(dados) {
   const tbody = document.getElementById('ultimasRespostas');
   tbody.innerHTML = "";
 
+  const badge = (valor) => {
+    if (valor === null || valor === undefined) return "-";
+    const numero = Number(valor);
+    if (numero >= 5) return `<span class="badge badge-5">${numero}</span>`;
+    if (numero === 4) return `<span class="badge badge-4">${numero}</span>`;
+    return `<span class="badge badge-3">${numero}</span>`;
+  };
+
   dados.slice(0, 20).forEach(r => {
-
-    const badge = (valor) => {
-      if (valor >= 5) return `<span class="badge badge-5">${valor}</span>`;
-      if (valor === 4) return `<span class="badge badge-4">${valor}</span>`;
-      return `<span class="badge badge-3">${valor}</span>`;
-    };
-
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td>${new Date(r.created_at).toLocaleDateString('pt-BR')}</td>
       <td>${r.nome || '-'}</td>
       <td>${r.sugestao || '-'}</td>
       <td>${r.morador || '-'}</td>
-      <td>${badge(r.qualidade ?? '-')}</td>
-      <td>${badge(r.tempo ?? '-')}</td>
-      <td>${badge(r.variedade ?? '-')}</td>
-      <td>${badge(r.custobeneficio ?? '-')}</td>
+      <td>${badge(r.qualidade)}</td>
+      <td>${badge(r.tempo)}</td>
+      <td>${badge(r.variedade)}</td>
+      <td>${badge(r.custobeneficio)}</td>
     `;
     tbody.appendChild(tr);
   });
 }
 
 function aplicarFiltro() {
-  const inicio = document.getElementById('dataInicio').value;
-  const fim = document.getElementById('dataFim').value;
-  carregarPainel(inicio || null, fim || null);
+  carregarPainel(
+    document.getElementById('dataInicio').value || null,
+    document.getElementById('dataFim').value || null
+  );
 }
 
 function limparFiltro() {
@@ -251,14 +207,7 @@ function limparFiltro() {
   carregarPainel();
 }
 
-function logout() {
-  localStorage.removeItem('usuarioLogado');
-  window.location.href = 'index.html';
-}
-
-document.addEventListener("DOMContentLoaded", () => {
-  carregarPainel();
-});
+document.addEventListener("DOMContentLoaded", carregarPainel);
 
 </script>
 
