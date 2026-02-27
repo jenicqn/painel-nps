@@ -18,35 +18,62 @@
 
 <div class="conteudo">
 
-  <div class="topbar d-flex justify-content-between align-items-center mb-4">
+  <div class="topbar mb-4">
     <h3>Estatísticas</h3>
   </div>
 
-  <!-- FILTRO GLOBAL -->
-  <div class="card p-3 mb-4 filtro-global">
+  <!-- FILTRO -->
+  <div class="card p-3 mb-4">
     <div class="row g-2">
-
       <div class="col-md-3">
         <input type="date" id="dataInicio" class="form-control">
       </div>
-
       <div class="col-md-3">
         <input type="date" id="dataFim" class="form-control">
       </div>
-
       <div class="col-md-2">
         <button id="btnAplicar" class="btn btn-primary w-100">Aplicar</button>
       </div>
-
       <div class="col-md-2">
         <button id="btnMesAtual" class="btn btn-outline-secondary w-100">Mês Atual</button>
       </div>
-
       <div class="col-md-2">
         <button id="btn30Dias" class="btn btn-outline-secondary w-100">Últimos 30 dias</button>
       </div>
-
     </div>
+  </div>
+
+  <!-- KPIs -->
+  <div class="row g-3 mb-4">
+
+    <div class="col-md-3">
+      <div class="kpi-card">
+        <div class="kpi-title">NPS Médio</div>
+        <div id="kpiNPS" class="kpi-value">-</div>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="kpi-card">
+        <div class="kpi-title">Total Respostas</div>
+        <div id="kpiTotal" class="kpi-value">-</div>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="kpi-card">
+        <div class="kpi-title">% Moradores</div>
+        <div id="kpiMoradores" class="kpi-value">-</div>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="kpi-card">
+        <div class="kpi-title">Média Qualidade</div>
+        <div id="kpiQualidade" class="kpi-value">-</div>
+      </div>
+    </div>
+
   </div>
 
   <!-- GRÁFICOS -->
