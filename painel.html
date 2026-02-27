@@ -155,7 +155,7 @@ async function carregarPainel(dataInicio = null, dataFim = null) {
 
     let query = `
       ${SUPABASE_URL}/rest/v1/feedback_detalhado
-      ?select=indicacao,nome,sugestao,morador,qualidade,tempo,variedade,custo_beneficio,created_at
+      ?select=indicacao,nome,sugestao,morador,qualidade,tempo,variedade,custobeneficio,created_at
       &order=created_at.desc
     `.replace(/\s+/g,'');
 
@@ -187,7 +187,7 @@ async function carregarPainel(dataInicio = null, dataFim = null) {
     console.error("Erro:", err);
   }
 }
-
+  
 function atualizarKPIs(dados) {
   const total = dados.length;
 
