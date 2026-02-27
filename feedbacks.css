@@ -15,7 +15,8 @@ th, td {
 
 .col-nps { 
   width: 95px; 
-  text-align: center;
+  text-align: left;
+  padding-left: 20px;
 }
 
 .col-morador { 
