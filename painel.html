@@ -189,11 +189,17 @@ async function carregarPainel(dataInicio = null, dataFim = null) {
 }
   
 function atualizarKPIs(dados) {
-  const total = dados.length;
+  let promotores = 0;
+  let neutros = 0;
+  let detratores = 0;
 
-  const promotores = dados.filter(d => d.indicacao >= 9).length;
-  const neutros = dados.filter(d => d.indicacao >= 7 && d.indicacao <= 8).length;
-  const detratores = dados.filter(d => d.indicacao <= 6).length;
+  dados.forEach(d => {
+    if (d.indicacao >= 9) promotores++;
+    else if (d.indicacao >= 7) neutros++;
+    else detratores++;
+  });
+
+  const total = dados.length;
 
   const nps = total > 0
     ? Math.round(((promotores - detratores) / total) * 100)
@@ -220,7 +226,7 @@ function preencherTabela(dados) {
       <td>${r.qualidade || '-'}</td>
       <td>${r.tempo || '-'}</td>
       <td>${r.variedade || '-'}</td>
-      <td>${r.custo_beneficio || '-'}</td>
+      <td>${r.custobeneficio ?? '-'}</td>
     `;
     tbody.appendChild(tr);
   });
