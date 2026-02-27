@@ -1,4 +1,5 @@
 let cupons = [];
+let graficoCupons;
 
 /* ================= UTIL ================= */
 
@@ -12,10 +13,8 @@ function mesAtualPadrao() {
 function calcularInicioFimMes(mesSelecionado) {
   const [ano, mes] = mesSelecionado.split("-");
   const inicio = `${ano}-${mes}-01`;
-
   const ultimoDia = new Date(ano, mes, 0).getDate();
   const fim = `${ano}-${mes}-${ultimoDia}`;
-
   return { inicio, fim };
 }
 
@@ -50,19 +49,26 @@ async function carregarCupons() {
 
   atualizarKPIs();
   renderizarTabela();
+  criarGrafico();
 }
 
 /* ================= KPIs ================= */
 
 function atualizarKPIs() {
 
-  const total = cupons.length;
+  const gerados = cupons.length;
   const utilizados = cupons.filter(c => c.utilizado).length;
-  const disponiveis = total - utilizados;
 
-  document.getElementById("kpiTotal").textContent = total;
+  const taxaUso = gerados
+    ? Math.round((utilizados / gerados) * 100)
+    : 0;
+
+  const conversao = taxaUso; // mesma lógica no mês filtrado
+
+  document.getElementById("kpiGerados").textContent = gerados;
   document.getElementById("kpiUtilizados").textContent = utilizados;
-  document.getElementById("kpiDisponiveis").textContent = disponiveis;
+  document.getElementById("kpiTaxaUso").textContent = taxaUso + "%";
+  document.getElementById("kpiConversao").textContent = conversao + "%";
 }
 
 /* ================= TABELA ================= */
@@ -101,6 +107,63 @@ function renderizarTabela() {
 
       tbody.appendChild(tr);
     });
+}
+
+/* ================= GRÁFICO ================= */
+
+function criarGrafico() {
+
+  const geradosPorDia = {};
+  const usadosPorDia = {};
+
+  cupons.forEach(c => {
+    const dia = c.created_at.split("T")[0];
+
+    geradosPorDia[dia] = (geradosPorDia[dia] || 0) + 1;
+
+    if (c.utilizado) {
+      const diaUso = c.data_utilizado
+        ? c.data_utilizado.split("T")[0]
+        : dia;
+
+      usadosPorDia[diaUso] = (usadosPorDia[diaUso] || 0) + 1;
+    }
+  });
+
+  const labels = Object.keys(geradosPorDia).sort();
+
+  const gerados = labels.map(d => geradosPorDia[d] || 0);
+  const usados = labels.map(d => usadosPorDia[d] || 0);
+
+  if (graficoCupons) graficoCupons.destroy();
+
+  graficoCupons = new Chart(
+    document.getElementById("graficoCupons"),
+    {
+      type: "line",
+      data: {
+        labels,
+        datasets: [
+          {
+            label: "Gerados",
+            data: gerados,
+            borderColor: "#2563eb",
+            backgroundColor: "rgba(37,99,235,0.15)",
+            fill: true,
+            tension: 0.3
+          },
+          {
+            label: "Utilizados",
+            data: usados,
+            borderColor: "#16a34a",
+            backgroundColor: "rgba(22,163,74,0.15)",
+            fill: true,
+            tension: 0.3
+          }
+        ]
+      }
+    }
+  );
 }
 
 /* ================= AÇÃO ================= */
