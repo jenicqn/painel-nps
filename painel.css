@@ -81,3 +81,91 @@ body {
 .badge-5 { background: #dcfce7; color: #166534; }
 .badge-4 { background: #fef9c3; color: #854d0e; }
 .badge-3 { background: #fee2e2; color: #991b1b; }
+
+
+/* ===== SIDEBAR MODERNA ===== */
+
+.sidebar {
+  width: 240px;
+  background: #0f172a;
+  color: #fff;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 20px 15px;
+}
+
+.sidebar-top {
+  display: flex;
+  flex-direction: column;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+  font-size: 18px;
+  margin-bottom: 30px;
+}
+
+.logo-dot {
+  width: 10px;
+  height: 10px;
+  background: #16a34a;
+  border-radius: 50%;
+}
+
+.logo-text {
+  letter-spacing: 0.5px;
+}
+
+.menu {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  text-decoration: none;
+  color: #cbd5e1;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.menu-item:hover {
+  background: #1e293b;
+  color: #fff;
+}
+
+.menu-item.active {
+  background: #2563eb;
+  color: #fff;
+  font-weight: 600;
+}
+
+.sidebar-bottom {
+  margin-top: 30px;
+}
+
+.logout-btn {
+  width: 100%;
+  padding: 10px;
+  border-radius: 8px;
+  border: none;
+  background: #dc2626;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.logout-btn:hover {
+  background: #b91c1c;
+}
