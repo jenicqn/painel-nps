@@ -1,33 +1,37 @@
-let paginaAtual = 0;
-const limite = 20;
+let pagina = 1;
+const limite = 10;
+let dadosAtuais = [];
 
-fetch("layout.html")
-  .then(res => res.text())
-  .then(html => {
-    document.getElementById("menuLateral").innerHTML = html;
-  });
+function formatarData(data) {
+  return new Date(data).toLocaleDateString("pt-BR");
+}
 
-async function carregarFeedbacks() {
+function mesAtualPadrao() {
+  const hoje = new Date();
+  const inicio = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+  const fim = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 1);
 
-  const busca = document.getElementById("buscaNome").value.trim();
-  const tipo = document.getElementById("filtroTipo").value;
+  const formatar = d => d.toISOString().split("T")[0];
+
+  document.getElementById("dataInicio").value = formatar(inicio);
+  document.getElementById("dataFim").value = formatar(fim);
+}
+
+async function aplicarFiltro() {
+
+  const nome = document.getElementById("buscarNome").value.trim().toLowerCase();
   const morador = document.getElementById("filtroMorador").value;
+  const dataInicio = document.getElementById("dataInicio").value;
+  const dataFim = document.getElementById("dataFim").value;
 
   let query = `
-    ${SUPABASE_URL}/rest/v1/feedback_detalhado
-    ?select=indicacao,nome,sugestao,morador,qualidade,tempo,variedade,custobeneficio,created_at
-    &order=created_at.desc
-    &limit=${limite}
-    &offset=${paginaAtual * limite}
+  ${SUPABASE_URL}/rest/v1/feedback_detalhado
+  ?select=*
+  &order=created_at.desc
   `.replace(/\s+/g,'');
 
-  if (busca) query += `&nome=ilike.*${busca}*`;
-
-  if (tipo === "promotores") query += `&indicacao=gte.9`;
-  if (tipo === "neutros") query += `&indicacao=gte.7&indicacao=lte.8`;
-  if (tipo === "detratores") query += `&indicacao=lte.6`;
-
-  if (morador) query += `&morador=eq.${morador}`;
+  if (dataInicio) query += `&created_at=gte.${dataInicio}`;
+  if (dataFim) query += `&created_at=lt.${dataFim}`;
 
   const res = await fetch(query, {
     headers: {
@@ -36,41 +40,122 @@ async function carregarFeedbacks() {
     }
   });
 
-  const dados = await res.json();
+  let dados = await res.json();
 
-  renderizarTabela(dados);
+  if (nome)
+    dados = dados.filter(d => d.nome?.toLowerCase().includes(nome));
+
+  if (morador)
+    dados = dados.filter(d =>
+      String(d.morador).toLowerCase().includes(morador)
+    );
+
+  dadosAtuais = dados;
+  pagina = 1;
+
+  atualizarResumo(dados);
+  renderizarTabela();
 }
 
-function renderizarTabela(dados) {
+function atualizarResumo(dados) {
 
-  const tbody = document.getElementById("listaFeedbacks");
+  const total = dados.length;
+  const moradores = dados.filter(d =>
+    String(d.morador).toLowerCase().includes("morador")
+  );
+
+  const mediaNPS = total
+    ? (dados.reduce((s, d) => s + Number(d.indicacao || 0), 0) / total).toFixed(1)
+    : 0;
+
+  const mediaQualidade = total
+    ? (dados.reduce((s, d) => s + Number(d.qualidade || 0), 0) / total).toFixed(1)
+    : 0;
+
+  document.getElementById("totalFiltrado").textContent = total;
+  document.getElementById("percentMoradores").textContent =
+    total ? Math.round((moradores.length / total) * 100) + "%" : "0%";
+
+  document.getElementById("mediaNPS").textContent = mediaNPS;
+  document.getElementById("mediaQualidade").textContent = mediaQualidade;
+}
+
+function renderizarTabela() {
+
+  const inicio = (pagina - 1) * limite;
+  const fim = inicio + limite;
+
+  const dadosPagina = dadosAtuais.slice(inicio, fim);
+
+  const tbody = document.getElementById("tabelaFeedbacks");
   tbody.innerHTML = "";
 
-  dados.forEach(r => {
-
-    const tr = document.createElement("tr");
-
-    tr.innerHTML = `
-      <td>${new Date(r.created_at).toLocaleDateString('pt-BR')}</td>
-      <td>${r.nome || '-'}</td>
-      <td style="max-width:300px; white-space:normal;">${r.sugestao || '-'}</td>
-      <td><span class="badge bg-dark">${r.indicacao}</span></td>
-      <td>${r.morador}</td>
-      <td>${r.qualidade}</td>
-      <td>${r.tempo}</td>
-      <td>${r.variedade}</td>
-      <td>${r.custobeneficio}</td>
+  dadosPagina.forEach(r => {
+    tbody.innerHTML += `
+      <tr>
+        <td>${formatarData(r.created_at)}</td>
+        <td>${r.nome || "-"}</td>
+        <td>${r.indicacao}</td>
+        <td>${r.morador}</td>
+        <td>${r.sugestao || "-"}</td>
+        <td>${r.qualidade}</td>
+        <td>${r.tempo}</td>
+        <td>${r.variedade}</td>
+        <td>${r.custobeneficio}</td>
+      </tr>
     `;
-
-    tbody.appendChild(tr);
   });
+
+  document.getElementById("paginaAtual").textContent = pagina;
 }
 
-function limparFiltros() {
-  document.getElementById("buscaNome").value = "";
-  document.getElementById("filtroTipo").value = "";
+function proximaPagina() {
+  if (pagina * limite < dadosAtuais.length) {
+    pagina++;
+    renderizarTabela();
+  }
+}
+
+function paginaAnterior() {
+  if (pagina > 1) {
+    pagina--;
+    renderizarTabela();
+  }
+}
+
+function exportarCSV() {
+
+  const linhas = [
+    ["Data","Nome","NPS","Morador","Sugestão"]
+  ];
+
+  dadosAtuais.forEach(r => {
+    linhas.push([
+      formatarData(r.created_at),
+      r.nome,
+      r.indicacao,
+      r.morador,
+      r.sugestao
+    ]);
+  });
+
+  const csv = linhas.map(l => l.join(";")).join("\n");
+
+  const blob = new Blob([csv], { type: "text/csv" });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = "feedbacks.csv";
+  link.click();
+}
+
+function limparFiltro() {
+  document.getElementById("buscarNome").value = "";
   document.getElementById("filtroMorador").value = "";
-  carregarFeedbacks();
+  mesAtualPadrao();
+  aplicarFiltro();
 }
 
-document.addEventListener("DOMContentLoaded", carregarFeedbacks);
+document.addEventListener("DOMContentLoaded", () => {
+  mesAtualPadrao();
+  aplicarFiltro();
+});
