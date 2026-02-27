@@ -69,8 +69,13 @@ function atualizarKPIs(dados) {
 
   const npsGeral = calcularNPS(dados);
 
-  const moradores = dados.filter(d => d.morador === "Sim");
-  const turistas = dados.filter(d => d.morador === "Não");
+  const moradores = dados.filter(d =>
+  String(d.morador).toLowerCase().includes("morador")
+);
+
+const turistas = dados.filter(d =>
+  String(d.morador).toLowerCase().includes("turista")
+);
 
   const npsMoradores = calcularNPS(moradores);
   const npsTuristas = calcularNPS(turistas);
