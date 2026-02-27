@@ -219,14 +219,21 @@ function gerarWordCloud(dados) {
   },
   fontFamily: 'Segoe UI',
   color: function (word, weight) {
-    if (weight >= 8) return "#1e3a8a";      // azul escuro dominante
-    if (weight >= 5) return "#2563eb";      // azul
-    if (weight >= 3) return "#16a34a";      // verde
-    return "#64748b";                       // neutro
+
+    const cores = [
+      "#60a5fa", // azul claro
+      "#93c5fd", // azul suave
+      "#86efac", // verde claro
+      "#fde68a", // amarelo suave
+      "#fca5a5", // vermelho claro
+      "#c4b5fd", // roxo suave
+      "#67e8f9"  // ciano claro
+    ];
+
+    return cores[Math.floor(Math.random() * cores.length)];
   },
   backgroundColor: "#ffffff",
-  rotateRatio: 0.1,      // quase sem rotação
-  rotationSteps: 2,
+  rotateRatio: 0.1,
   minSize: 14,
   shrinkToFit: true
 });
