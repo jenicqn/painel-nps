@@ -207,7 +207,26 @@ function limparFiltro() {
   carregarPainel();
 }
 
-document.addEventListener("DOMContentLoaded", () => carregarPainel());
+document.addEventListener("DOMContentLoaded", () => {
+
+  const hoje = new Date();
+
+  const primeiroDia = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+  const ultimoDia = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0);
+
+  const formatar = (data) => {
+    return data.toISOString().split("T")[0];
+  };
+
+  const dataInicio = formatar(primeiroDia);
+  const dataFim = formatar(ultimoDia);
+
+  document.getElementById("dataInicio").value = dataInicio;
+  document.getElementById("dataFim").value = dataFim;
+
+  carregarPainel(dataInicio, dataFim);
+
+});
 
 </script>
 
