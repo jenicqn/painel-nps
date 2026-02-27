@@ -14,7 +14,17 @@ th, td {
 .col-data { width: 95px; }
 .col-nome { width: 190px; }
 
-.col-nps { width: 95px; }
+/* Coluna NPS */
+.col-nps {
+  width: 95px;
+  text-align: left;
+  padding-left: 16px;
+}
+
+th.col-nps {
+  padding-left: 16px;
+}
+
 .col-morador { width: 130px; }
 
 .col-sugestao { width: 380px; }
@@ -22,7 +32,6 @@ th, td {
 .col-nota { width: 80px; }
 
 /* Ajuste fino das métricas */
-td:nth-child(3),
 td:nth-child(6),
 td:nth-child(7),
 td:nth-child(8),
