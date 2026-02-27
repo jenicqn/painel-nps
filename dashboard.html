@@ -1,111 +1,103 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Painel Smash do Cabo</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard - Smash do Cabo</title>
 
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="layout.css">
-  <link rel="stylesheet" href="dashboard.css">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="layout.css">
+<link rel="stylesheet" href="dashboard.css">
 </head>
 
 <body>
 
 <div id="sidebar-container"></div>
 
-<div class="content">
+<div class="conteudo">
 
-  <div class="topbar">
-    <h3>Painel Smash do Cabo</h3>
-    <div>
-      <span>Olá, <strong>Jeniffer Adm</strong></span>
-      <button onclick="logout()" class="btn btn-danger btn-sm ms-3">Sair</button>
-    </div>
+  <div class="topbar d-flex justify-content-between align-items-center mb-4">
+    <h3>Dashboard</h3>
+    <span>Olá, <strong id="nomeUsuario"></strong></span>
   </div>
 
   <!-- KPIs -->
   <div class="row g-4 mb-4">
 
-    <div class="col-md-2">
+    <div class="col-md-3">
       <div class="card-panel nps">
         <div class="kpi-title">NPS Geral</div>
         <div id="npsGeral" class="kpi-value">-</div>
       </div>
     </div>
 
-    <div class="col-md-2">
+    <div class="col-md-3">
       <div class="card-panel promotores">
         <div class="kpi-title">Promotores</div>
         <div id="npsPromotores" class="kpi-value">-</div>
       </div>
     </div>
 
-    <div class="col-md-2">
+    <div class="col-md-3">
       <div class="card-panel neutros">
         <div class="kpi-title">Neutros</div>
         <div id="npsNeutros" class="kpi-value">-</div>
       </div>
     </div>
 
-    <div class="col-md-2">
+    <div class="col-md-3">
       <div class="card-panel detratores">
         <div class="kpi-title">Detratores</div>
         <div id="npsDetratores" class="kpi-value">-</div>
       </div>
     </div>
 
-    <div class="col-md-2">
+    <div class="col-md-3">
       <div class="card-panel respostas">
         <div class="kpi-title">Respostas</div>
         <div id="totalRespostas" class="kpi-value">-</div>
       </div>
     </div>
 
-    <div class="col-md-2">
+    <div class="col-md-3">
       <div class="card-panel morador-nps">
         <div class="kpi-title">NPS Moradores</div>
         <div id="npsMoradores" class="kpi-value">-</div>
       </div>
     </div>
 
-    <div class="col-md-2">
+    <div class="col-md-3">
       <div class="card-panel turista-nps">
         <div class="kpi-title">NPS Turistas</div>
         <div id="npsTuristas" class="kpi-value">-</div>
       </div>
-      <div class="card p-4 mb-4">
-  <h5 class="mb-3">Comparativo NPS Moradores vs Turistas</h5>
-  <canvas id="graficoMoradorTurista"></canvas>
-</div>
     </div>
 
   </div>
 
-  <h5 class="mb-3">Últimas Respostas</h5>
-
-  <table class="table-modern">
-    <thead>
-      <tr>
-        <th>Data</th>
-        <th>Nome</th>
-        <th>Sugestão</th>
-        <th>NPS</th>
-        <th>Morador</th>
-        <th>Qualidade</th>
-        <th>Tempo</th>
-        <th>Variedade</th>
-        <th>Custo-benefício</th>
-      </tr>
-    </thead>
-    <tbody id="ultimasRespostas"></tbody>
-  </table>
+  <!-- Gráfico -->
+  <div class="card p-4 mb-4">
+    <h5 class="mb-3">Comparativo NPS Moradores vs Turistas</h5>
+    <canvas id="graficoMoradorTurista"></canvas>
+  </div>
 
 </div>
 
 <script src="config.js"></script>
+<script src="sidebar.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="dashboard.js"></script>
+
+<script>
+// Guard de sessão
+const usuario = JSON.parse(localStorage.getItem("usuario"));
+if (!usuario) {
+  window.location.href = "index.html";
+}
+
+// Nome dinâmico
+document.getElementById("nomeUsuario").textContent = usuario.nome || "Usuário";
+</script>
 
 </body>
 </html>
