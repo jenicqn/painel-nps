@@ -1,5 +1,3 @@
-let graficoComparativo = null;
-
 function formatarDataLocal(data) {
   const ano = data.getFullYear();
   const mes = String(data.getMonth() + 1).padStart(2, '0');
@@ -17,42 +15,36 @@ function nomeMesAtual() {
 }
 
 async function carregarDashboard() {
-  try {
 
-    const hoje = new Date();
+  const hoje = new Date();
 
-    const inicioMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
-    const inicioProximoMes = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 1);
+  const inicioMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+  const inicioProximoMes = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 1);
 
-    const dataInicio = formatarDataLocal(inicioMes);
-    const dataFim = formatarDataLocal(inicioProximoMes);
+  const dataInicio = formatarDataLocal(inicioMes);
+  const dataFim = formatarDataLocal(inicioProximoMes);
 
-    const query = `
-      ${SUPABASE_URL}/rest/v1/feedback_detalhado
-      ?select=indicacao,morador
-      &created_at=gte.${dataInicio}
-      &created_at=lt.${dataFim}
-    `.replace(/\s+/g,'');
+  const query = `
+    ${SUPABASE_URL}/rest/v1/feedback_detalhado
+    ?select=indicacao,morador
+    &created_at=gte.${dataInicio}
+    &created_at=lt.${dataFim}
+  `.replace(/\s+/g,'');
 
-    const res = await fetch(query, {
-      headers: {
-        apikey: SUPABASE_ANON_KEY,
-        Authorization: `Bearer ${SUPABASE_ANON_KEY}`
-      }
-    });
+  const res = await fetch(query, {
+    headers: {
+      apikey: SUPABASE_ANON_KEY,
+      Authorization: `Bearer ${SUPABASE_ANON_KEY}`
+    }
+  });
 
-    const dados = await res.json();
+  const dados = await res.json();
 
-    atualizarKPIs(dados);
-    atualizarGraficoMensal(dados);
+  atualizarKPIs(dados);
 
-    document.getElementById("mesAtual").textContent = nomeMesAtual();
+  document.getElementById("mesAtual").textContent = nomeMesAtual();
 
-    carregarRespostasHoje();
-
-  } catch (err) {
-    console.error(err);
-  }
+  carregarRespostasHoje();
 }
 
 function calcularNPS(lista) {
@@ -94,34 +86,6 @@ function atualizarKPIs(dados) {
   document.getElementById('totalRespostas').textContent = total;
   document.getElementById('npsMoradores').textContent = npsMoradores;
   document.getElementById('npsTuristas').textContent = npsTuristas;
-}
-
-function atualizarGraficoMensal(dados) {
-
-  const moradores = dados.filter(d => d.morador === "Sim");
-  const turistas = dados.filter(d => d.morador === "Não");
-
-  const npsMoradores = calcularNPS(moradores);
-  const npsTuristas = calcularNPS(turistas);
-
-  const ctx = document.getElementById('graficoMoradorTurista').getContext('2d');
-
-  if (graficoComparativo) graficoComparativo.destroy();
-
-  graficoComparativo = new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: ['Moradores', 'Turistas'],
-      datasets: [{
-        data: [npsMoradores, npsTuristas]
-      }]
-    },
-    options: {
-      responsive: true,
-      plugins: { legend: { display: false } },
-      scales: { y: { min: -100, max: 100 } }
-    }
-  });
 }
 
 async function carregarRespostasHoje() {
