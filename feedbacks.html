@@ -1,87 +1,99 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Feedbacks</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Feedbacks - Smash do Cabo</title>
 
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="app.css">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="layout.css">
+<link rel="stylesheet" href="feedbacks.css">
 </head>
 
 <body>
 
-<div id="menuLateral"></div>
+<div id="sidebar-container"></div>
 
-<div class="content">
+<div class="conteudo">
 
-  <div class="topbar">
-    <h3>Feedbacks dos Clientes</h3>
-  </div>
+<h3 class="mb-4">Feedbacks dos Clientes</h3>
 
-  <!-- Filtros -->
-  <div class="card p-3 mb-4">
+<!-- FILTROS -->
+<div class="card p-3 mb-4">
+<div class="row g-3">
 
-    <div class="row g-3">
+<div class="col-md-3">
+<input type="text" id="buscarNome" class="form-control" placeholder="Buscar por nome">
+</div>
 
-      <div class="col-md-3">
-        <input type="text" id="buscaNome" class="form-control" placeholder="Buscar por nome...">
-      </div>
+<div class="col-md-2">
+<select id="filtroMorador" class="form-select">
+<option value="">Todos</option>
+<option value="morador">Morador</option>
+<option value="turista">Turista</option>
+</select>
+</div>
 
-      <div class="col-md-2">
-        <select id="filtroTipo" class="form-select">
-          <option value="">Todos</option>
-          <option value="promotores">Promotores</option>
-          <option value="neutros">Neutros</option>
-          <option value="detratores">Detratores</option>
-        </select>
-      </div>
+<div class="col-md-2">
+<input type="date" id="dataInicio" class="form-control">
+</div>
 
-      <div class="col-md-2">
-        <select id="filtroMorador" class="form-select">
-          <option value="">Todos</option>
-          <option value="Sim">Moradores</option>
-          <option value="Não">Turistas</option>
-        </select>
-      </div>
+<div class="col-md-2">
+<input type="date" id="dataFim" class="form-control">
+</div>
 
-      <div class="col-md-2">
-        <button class="btn btn-primary w-100" onclick="carregarFeedbacks()">Filtrar</button>
-      </div>
+<div class="col-md-3 d-flex gap-2">
+<button onclick="aplicarFiltro()" class="btn btn-primary w-50">Filtrar</button>
+<button onclick="limparFiltro()" class="btn btn-outline-secondary w-50">Limpar</button>
+</div>
 
-      <div class="col-md-2">
-        <button class="btn btn-outline-secondary w-100" onclick="limparFiltros()">Limpar</button>
-      </div>
+</div>
+</div>
 
-    </div>
+<!-- RESUMO -->
+<div class="row mb-3">
+<div class="col-md-3"><strong>Total:</strong> <span id="totalFiltrado">0</span></div>
+<div class="col-md-3"><strong>% Moradores:</strong> <span id="percentMoradores">0%</span></div>
+<div class="col-md-3"><strong>Média NPS:</strong> <span id="mediaNPS">0</span></div>
+<div class="col-md-3"><strong>Média Qualidade:</strong> <span id="mediaQualidade">0</span></div>
+</div>
 
-  </div>
+<!-- BOTÃO CSV -->
+<div class="mb-3">
+<button onclick="exportarCSV()" class="btn btn-success">Exportar CSV</button>
+</div>
 
-  <!-- Tabela -->
-  <div class="card p-3">
-    <div class="table-responsive">
-      <table class="table table-hover align-middle">
-        <thead>
-          <tr>
-            <th>Data</th>
-            <th>Nome</th>
-            <th>Sugestão</th>
-            <th>NPS</th>
-            <th>Morador</th>
-            <th>Qualidade</th>
-            <th>Tempo</th>
-            <th>Variedade</th>
-            <th>Custo-benefício</th>
-          </tr>
-        </thead>
-        <tbody id="listaFeedbacks"></tbody>
-      </table>
-    </div>
-  </div>
+<!-- TABELA -->
+<div class="table-responsive">
+<table class="table table-striped table-hover">
+<thead>
+<tr>
+<th>Data</th>
+<th>Nome</th>
+<th>NPS</th>
+<th>Morador</th>
+<th>Sugestão</th>
+<th>Qualidade</th>
+<th>Tempo</th>
+<th>Variedade</th>
+<th>Custo-benefício</th>
+</tr>
+</thead>
+<tbody id="tabelaFeedbacks"></tbody>
+</table>
+</div>
+
+<!-- PAGINAÇÃO -->
+<div class="d-flex justify-content-between align-items-center mt-3">
+<button onclick="paginaAnterior()" class="btn btn-outline-secondary">Anterior</button>
+<span>Página <span id="paginaAtual">1</span></span>
+<button onclick="proximaPagina()" class="btn btn-outline-secondary">Próxima</button>
+</div>
 
 </div>
 
 <script src="config.js"></script>
+<script src="sidebar.js"></script>
 <script src="feedbacks.js"></script>
 
 </body>
