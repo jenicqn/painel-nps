@@ -1,6 +1,8 @@
 let pagina = 1;
 const limite = 10;
 let dadosAtuais = [];
+let colunaOrdenacao = "created_at";
+let direcaoOrdenacao = "desc";
 
 function formatarData(data) {
   return new Date(data).toLocaleDateString("pt-BR");
@@ -12,7 +14,6 @@ function formatarDataISO(data) {
 
 function mesAtualPadrao() {
   const hoje = new Date();
-
   const inicio = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
   const fim = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 1);
 
@@ -22,25 +23,14 @@ function mesAtualPadrao() {
 
 async function aplicarFiltro() {
 
-  const nomeInput = document.getElementById("buscarNome");
-  const moradorInput = document.getElementById("filtroMorador");
-  const dataInicioInput = document.getElementById("dataInicio");
-  const dataFimInput = document.getElementById("dataFim");
-
-  if (!nomeInput || !moradorInput || !dataInicioInput || !dataFimInput) {
-    console.error("Elementos de filtro não encontrados.");
-    return;
-  }
-
-  const nome = nomeInput.value.trim().toLowerCase();
-  const morador = moradorInput.value;
-  const dataInicio = dataInicioInput.value;
-  const dataFim = dataFimInput.value;
+  const nome = document.getElementById("buscarNome").value.trim().toLowerCase();
+  const morador = document.getElementById("filtroMorador").value;
+  const dataInicio = document.getElementById("dataInicio").value;
+  const dataFim = document.getElementById("dataFim").value;
 
   let query = `
     ${SUPABASE_URL}/rest/v1/feedback_detalhado
     ?select=*
-    &order=created_at.desc
   `.replace(/\s+/g,'');
 
   if (dataInicio) query += `&created_at=gte.${dataInicio}`;
@@ -64,10 +54,54 @@ async function aplicarFiltro() {
     );
 
   dadosAtuais = dados;
+  ordenarDados();
   pagina = 1;
 
   atualizarResumo(dados);
   renderizarTabela();
+}
+
+function ordenar(coluna) {
+
+  if (colunaOrdenacao === coluna) {
+    direcaoOrdenacao = direcaoOrdenacao === "asc" ? "desc" : "asc";
+  } else {
+    colunaOrdenacao = coluna;
+    direcaoOrdenacao = "desc";
+  }
+
+  ordenarDados();
+  renderizarTabela();
+}
+
+function ordenarDados() {
+
+  dadosAtuais.sort((a, b) => {
+
+    let valorA = a[colunaOrdenacao];
+    let valorB = b[colunaOrdenacao];
+
+    if (colunaOrdenacao === "created_at") {
+      valorA = new Date(valorA);
+      valorB = new Date(valorB);
+    }
+
+    if (typeof valorA === "string")
+      valorA = valorA.toLowerCase();
+
+    if (typeof valorB === "string")
+      valorB = valorB.toLowerCase();
+
+    if (valorA > valorB) return direcaoOrdenacao === "asc" ? 1 : -1;
+    if (valorA < valorB) return direcaoOrdenacao === "asc" ? -1 : 1;
+    return 0;
+  });
+}
+
+function badgeNPS(valor) {
+  if (valor >= 9) return `<span class="badge bg-success">${valor}</span>`;
+  if (valor >= 7) return `<span class="badge bg-warning text-dark">${valor}</span>`;
+  return `<span class="badge bg-danger">${valor}</span>`;
 }
 
 function calcularNPS(lista) {
@@ -104,19 +138,17 @@ function atualizarResumo(dados) {
 
   const nps = calcularNPS(dados);
 
-  document.getElementById("totalFiltrado").textContent = total;
-  document.getElementById("percentMoradores").textContent =
-    total ? Math.round((moradores.length / total) * 100) + "%" : "0%";
-
-  document.getElementById("mediaNPS").textContent = mediaNPS;
-  document.getElementById("mediaQualidade").textContent = mediaQualidade;
-  document.getElementById("npsResumo").textContent = nps;
+  document.getElementById("resumoLinha").innerHTML =
+    `Total: <strong>${total}</strong> |
+     Moradores: <strong>${Math.round((moradores.length / total) * 100 || 0)}%</strong> |
+     NPS: <strong>${nps}</strong> |
+     Média NPS: <strong>${mediaNPS}</strong> |
+     Média Qualidade: <strong>${mediaQualidade}</strong>`;
 }
 
 function renderizarTabela() {
 
   const tbody = document.getElementById("tabelaFeedbacks");
-  if (!tbody) return;
 
   const inicio = (pagina - 1) * limite;
   const fim = inicio + limite;
@@ -130,7 +162,7 @@ function renderizarTabela() {
       <tr>
         <td>${formatarData(r.created_at)}</td>
         <td>${r.nome || "-"}</td>
-        <td>${r.indicacao}</td>
+        <td>${badgeNPS(r.indicacao)}</td>
         <td>${r.morador}</td>
         <td>${r.sugestao || "-"}</td>
         <td>${r.qualidade}</td>
@@ -141,7 +173,13 @@ function renderizarTabela() {
     `;
   });
 
-  document.getElementById("paginaAtual").textContent = pagina;
+  const totalPaginas = Math.ceil(dadosAtuais.length / limite);
+
+  document.getElementById("paginaAtual").textContent =
+    `Página ${pagina} de ${totalPaginas}`;
+
+  document.querySelector(".btnAnterior").disabled = pagina === 1;
+  document.querySelector(".btnProxima").disabled = pagina === totalPaginas;
 }
 
 function proximaPagina() {
@@ -156,38 +194,6 @@ function paginaAnterior() {
     pagina--;
     renderizarTabela();
   }
-}
-
-function exportarCSV() {
-
-  const linhas = [
-    ["Data","Nome","NPS","Morador","Sugestão"]
-  ];
-
-  dadosAtuais.forEach(r => {
-    linhas.push([
-      formatarData(r.created_at),
-      r.nome,
-      r.indicacao,
-      r.morador,
-      r.sugestao
-    ]);
-  });
-
-  const csv = linhas.map(l => l.join(";")).join("\n");
-
-  const blob = new Blob([csv], { type: "text/csv" });
-  const link = document.createElement("a");
-  link.href = URL.createObjectURL(blob);
-  link.download = "feedbacks.csv";
-  link.click();
-}
-
-function limparFiltro() {
-  document.getElementById("buscarNome").value = "";
-  document.getElementById("filtroMorador").value = "";
-  mesAtualPadrao();
-  aplicarFiltro();
 }
 
 document.addEventListener("DOMContentLoaded", () => {
