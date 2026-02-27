@@ -1,5 +1,7 @@
 let cupons = [];
 let graficoCupons;
+let pagina = 1;
+const limite = 10;
 
 /* ================= UTIL ================= */
 
@@ -12,10 +14,9 @@ function mesAtualPadrao() {
 
 function calcularInicioFimMes(mesSelecionado) {
   const [ano, mes] = mesSelecionado.split("-");
-  const inicio = `${ano}-${mes}-01`;
-  const ultimoDia = new Date(ano, mes, 0).getDate();
-  const fim = `${ano}-${mes}-${ultimoDia}`;
-  return { inicio, fim };
+  const inicio = new Date(`${ano}-${mes}-01`);
+  const ultimoDia = new Date(ano, mes, 0);
+  return { inicio, fim: ultimoDia };
 }
 
 /* ================= FETCH ================= */
@@ -29,7 +30,7 @@ async function carregarCupons() {
 
   if (mesSelecionado) {
     const { inicio, fim } = calcularInicioFimMes(mesSelecionado);
-    query += `&created_at=gte.${inicio}&created_at=lte.${fim}`;
+    query += `&created_at=gte.${inicio.toISOString()}&created_at=lte.${fim.toISOString()}`;
   }
 
   const res = await fetch(query, {
@@ -47,6 +48,8 @@ async function carregarCupons() {
   if (status === "disponivel")
     cupons = cupons.filter(c => !c.utilizado);
 
+  pagina = 1;
+
   atualizarKPIs();
   renderizarTabela();
   criarGrafico();
@@ -63,77 +66,123 @@ function atualizarKPIs() {
     ? Math.round((utilizados / gerados) * 100)
     : 0;
 
-  const conversao = taxaUso; // mesma lógica no mês filtrado
-
   document.getElementById("kpiGerados").textContent = gerados;
   document.getElementById("kpiUtilizados").textContent = utilizados;
   document.getElementById("kpiTaxaUso").textContent = taxaUso + "%";
-  document.getElementById("kpiConversao").textContent = conversao + "%";
+  document.getElementById("kpiConversao").textContent = taxaUso + "%";
 }
 
-/* ================= TABELA ================= */
+/* ================= PAGINAÇÃO ================= */
 
 function renderizarTabela() {
 
   const tbody = document.getElementById("tabelaCupons");
   tbody.innerHTML = "";
 
-  cupons
+  const inicio = (pagina - 1) * limite;
+  const fim = inicio + limite;
+
+  const dadosPagina = cupons
     .sort((a,b) => new Date(b.created_at) - new Date(a.created_at))
-    .forEach(cupom => {
+    .slice(inicio, fim);
 
-      const validade = cupom.valido_ate
-        ? new Date(cupom.valido_ate).toLocaleDateString("pt-BR")
-        : "-";
+  dadosPagina.forEach(cupom => {
 
-      const tr = document.createElement("tr");
+    const validade = cupom.valido_ate
+      ? new Date(cupom.valido_ate).toLocaleDateString("pt-BR")
+      : "-";
 
-      tr.innerHTML = `
-        <td>${cupom.codigo}</td>
-        <td>${cupom.cliente_nome || "-"}<br><small>${cupom.cliente_telefone || ""}</small></td>
-        <td>${cupom.brinde || "-"}</td>
-        <td>${validade}</td>
-        <td>
-          ${cupom.utilizado
-            ? '<span class="badge bg-success">Utilizado</span>'
-            : '<span class="badge bg-warning text-dark">Disponível</span>'}
-        </td>
-        <td>
-          ${cupom.utilizado
-            ? '<span class="text-muted">—</span>'
-            : `<button class="btn btn-sm btn-danger" onclick="darBaixa('${cupom.codigo}')">Dar baixa</button>`}
-        </td>
-      `;
+    const tr = document.createElement("tr");
 
-      tbody.appendChild(tr);
-    });
+    tr.innerHTML = `
+      <td>${cupom.codigo}</td>
+      <td>${cupom.cliente_nome || "-"}<br><small>${cupom.cliente_telefone || ""}</small></td>
+      <td>${cupom.brinde || "-"}</td>
+      <td>${validade}</td>
+      <td>
+        ${cupom.utilizado
+          ? '<span class="badge bg-success">Utilizado</span>'
+          : '<span class="badge bg-warning text-dark">Disponível</span>'}
+      </td>
+      <td>
+        ${cupom.utilizado
+          ? '<span class="text-muted">—</span>'
+          : `<button class="btn btn-sm btn-danger" onclick="darBaixa('${cupom.codigo}')">Dar baixa</button>`}
+      </td>
+    `;
+
+    tbody.appendChild(tr);
+  });
+
+  atualizarControlesPaginacao();
 }
 
-/* ================= GRÁFICO ================= */
+function atualizarControlesPaginacao() {
+
+  const totalPaginas = Math.ceil(cupons.length / limite);
+
+  let controles = document.getElementById("paginacao");
+
+  if (!controles) {
+    controles = document.createElement("div");
+    controles.id = "paginacao";
+    controles.className = "d-flex justify-content-between mt-3";
+    document.querySelector(".table").parentNode.appendChild(controles);
+  }
+
+  controles.innerHTML = `
+    <button class="btn btn-secondary" ${pagina === 1 ? "disabled" : ""} onclick="paginaAnterior()">Anterior</button>
+    <span>Página ${pagina} de ${totalPaginas || 1}</span>
+    <button class="btn btn-secondary" ${pagina === totalPaginas ? "disabled" : ""} onclick="proximaPagina()">Próxima</button>
+  `;
+}
+
+function proximaPagina() {
+  if (pagina * limite < cupons.length) {
+    pagina++;
+    renderizarTabela();
+  }
+}
+
+function paginaAnterior() {
+  if (pagina > 1) {
+    pagina--;
+    renderizarTabela();
+  }
+}
+
+/* ================= GRÁFICO CORRIGIDO ================= */
 
 function criarGrafico() {
 
-  const geradosPorDia = {};
-  const usadosPorDia = {};
+  const mesSelecionado = document.getElementById("filtroMes").value;
+  if (!mesSelecionado) return;
 
-  cupons.forEach(c => {
-    const dia = c.created_at.split("T")[0];
+  const { inicio, fim } = calcularInicioFimMes(mesSelecionado);
 
-    geradosPorDia[dia] = (geradosPorDia[dia] || 0) + 1;
+  const dias = [];
+  const gerados = [];
+  const usados = [];
 
-    if (c.utilizado) {
-      const diaUso = c.data_utilizado
-        ? c.data_utilizado.split("T")[0]
-        : dia;
+  let dataAtual = new Date(inicio);
 
-      usadosPorDia[diaUso] = (usadosPorDia[diaUso] || 0) + 1;
-    }
-  });
+  while (dataAtual <= fim) {
+    const diaStr = dataAtual.toISOString().split("T")[0];
+    dias.push(diaStr);
 
-  const labels = Object.keys(geradosPorDia).sort();
+    const geradosDia = cupons.filter(c =>
+      c.created_at?.startsWith(diaStr)
+    ).length;
 
-  const gerados = labels.map(d => geradosPorDia[d] || 0);
-  const usados = labels.map(d => usadosPorDia[d] || 0);
+    const usadosDia = cupons.filter(c =>
+      c.data_utilizado?.startsWith(diaStr)
+    ).length;
+
+    gerados.push(geradosDia);
+    usados.push(usadosDia);
+
+    dataAtual.setDate(dataAtual.getDate() + 1);
+  }
 
   if (graficoCupons) graficoCupons.destroy();
 
@@ -142,7 +191,7 @@ function criarGrafico() {
     {
       type: "line",
       data: {
-        labels,
+        labels: dias,
         datasets: [
           {
             label: "Gerados",
@@ -189,11 +238,8 @@ async function darBaixa(codigo) {
 /* ================= INIT ================= */
 
 document.addEventListener("DOMContentLoaded", () => {
-
   mesAtualPadrao();
   carregarCupons();
-
   document.getElementById("btnFiltrar")
     .addEventListener("click", carregarCupons);
-
 });
