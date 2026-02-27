@@ -1,22 +1,5 @@
 let graficoComparativo = null;
 
-async function carregarDashboard() {
-  try {
-
-const hoje = new Date();
-
-const inicioDia = new Date(
-  hoje.getFullYear(),
-  hoje.getMonth(),
-  hoje.getDate()
-);
-
-const inicioProximoDia = new Date(
-  hoje.getFullYear(),
-  hoje.getMonth(),
-  hoje.getDate() + 1
-);
-
 function formatarDataLocal(data) {
   const ano = data.getFullYear();
   const mes = String(data.getMonth() + 1).padStart(2, '0');
@@ -24,15 +7,32 @@ function formatarDataLocal(data) {
   return `${ano}-${mes}-${dia}`;
 }
 
-const dataInicio = formatarDataLocal(inicioDia);
-const dataFim = formatarDataLocal(inicioProximoDia);
+function nomeMesAtual() {
+  const meses = [
+    "Janeiro","Fevereiro","Março","Abril","Maio","Junho",
+    "Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"
+  ];
+  const hoje = new Date();
+  return meses[hoje.getMonth()];
+}
 
-const query = `
-  ${SUPABASE_URL}/rest/v1/feedback_detalhado
-  ?select=indicacao,morador
-  &created_at=gte.${dataInicio}
-  &created_at=lt.${dataFim}
-`.replace(/\s+/g,'');
+async function carregarDashboard() {
+  try {
+
+    const hoje = new Date();
+
+    const inicioMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+    const inicioProximoMes = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 1);
+
+    const dataInicio = formatarDataLocal(inicioMes);
+    const dataFim = formatarDataLocal(inicioProximoMes);
+
+    const query = `
+      ${SUPABASE_URL}/rest/v1/feedback_detalhado
+      ?select=indicacao,morador
+      &created_at=gte.${dataInicio}
+      &created_at=lt.${dataFim}
+    `.replace(/\s+/g,'');
 
     const res = await fetch(query, {
       headers: {
@@ -41,11 +41,14 @@ const query = `
       }
     });
 
-    if (!res.ok) throw new Error("Erro ao buscar dados");
-
     const dados = await res.json();
 
     atualizarKPIs(dados);
+    atualizarGraficoMensal(dados);
+
+    document.getElementById("mesAtual").textContent = nomeMesAtual();
+
+    carregarRespostasHoje();
 
   } catch (err) {
     console.error(err);
@@ -66,31 +69,6 @@ function calcularNPS(lista) {
   return total > 0
     ? Math.round(((promotores - detratores) / total) * 100)
     : 0;
-}
-
-function atualizarGrafico(npsMoradores, npsTuristas) {
-
-  const ctx = document.getElementById('graficoMoradorTurista');
-
-  if (!ctx) return;
-
-  const context = ctx.getContext('2d');
-
-  if (graficoComparativo) graficoComparativo.destroy();
-
-  graficoComparativo = new Chart(context, {
-    type: 'bar',
-    data: {
-      labels: ['Moradores', 'Turistas'],
-      datasets: [{
-        data: [npsMoradores, npsTuristas]
-      }]
-    },
-    options: {
-      plugins: { legend: { display: false } },
-      scales: { y: { min: -100, max: 100 } }
-    }
-  });
 }
 
 function atualizarKPIs(dados) {
@@ -116,8 +94,75 @@ function atualizarKPIs(dados) {
   document.getElementById('totalRespostas').textContent = total;
   document.getElementById('npsMoradores').textContent = npsMoradores;
   document.getElementById('npsTuristas').textContent = npsTuristas;
+}
 
-  atualizarGrafico(npsMoradores, npsTuristas);
+function atualizarGraficoMensal(dados) {
+
+  const moradores = dados.filter(d => d.morador === "Sim");
+  const turistas = dados.filter(d => d.morador === "Não");
+
+  const npsMoradores = calcularNPS(moradores);
+  const npsTuristas = calcularNPS(turistas);
+
+  const ctx = document.getElementById('graficoMoradorTurista').getContext('2d');
+
+  if (graficoComparativo) graficoComparativo.destroy();
+
+  graficoComparativo = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: ['Moradores', 'Turistas'],
+      datasets: [{
+        data: [npsMoradores, npsTuristas]
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: { y: { min: -100, max: 100 } }
+    }
+  });
+}
+
+async function carregarRespostasHoje() {
+
+  const hoje = new Date();
+  const inicioDia = formatarDataLocal(hoje);
+
+  const proximoDia = new Date(hoje);
+  proximoDia.setDate(proximoDia.getDate() + 1);
+
+  const dataFim = formatarDataLocal(proximoDia);
+
+  const query = `
+    ${SUPABASE_URL}/rest/v1/feedback_detalhado
+    ?select=nome,indicacao,created_at
+    &created_at=gte.${inicioDia}
+    &created_at=lt.${dataFim}
+    &order=created_at.desc
+    &limit=5
+  `.replace(/\s+/g,'');
+
+  const res = await fetch(query, {
+    headers: {
+      apikey: SUPABASE_ANON_KEY,
+      Authorization: `Bearer ${SUPABASE_ANON_KEY}`
+    }
+  });
+
+  const dados = await res.json();
+
+  const tbody = document.getElementById("tabelaHoje");
+  tbody.innerHTML = "";
+
+  dados.forEach(r => {
+    tbody.innerHTML += `
+      <tr>
+        <td>${r.nome || '-'}</td>
+        <td>${r.indicacao}</td>
+      </tr>
+    `;
+  });
 }
 
 document.addEventListener("DOMContentLoaded", carregarDashboard);
