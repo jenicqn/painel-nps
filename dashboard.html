@@ -6,12 +6,13 @@
   <title>Painel Smash do Cabo</title>
 
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="layout.css">
   <link rel="stylesheet" href="dashboard.css">
 </head>
 
 <body>
 
-<div id="menuLateral"></div>
+<div id="sidebar-container"></div>
 
 <div class="content">
 
@@ -81,35 +82,6 @@
 
   </div>
 
-  <!-- Filtros -->
-  <div class="mb-3 d-flex gap-2 flex-wrap" id="filtrosTipo">
-    <button onclick="filtrarTipo(null, this)" class="btn btn-outline-secondary btn-sm active">Todos</button>
-    <button onclick="filtrarTipo('promotores', this)" class="btn btn-outline-success btn-sm">Promotores</button>
-    <button onclick="filtrarTipo('neutros', this)" class="btn btn-outline-warning btn-sm">Neutros</button>
-    <button onclick="filtrarTipo('detratores', this)" class="btn btn-outline-danger btn-sm">Detratores</button>
-  </div>
-
-  <div class="mb-3 d-flex gap-2 flex-wrap" id="filtrosMorador">
-    <button onclick="filtrarMorador(null, this)" class="btn btn-outline-secondary btn-sm active">Todos</button>
-    <button onclick="filtrarMorador('Sim', this)" class="btn btn-outline-primary btn-sm">Morador</button>
-    <button onclick="filtrarMorador('Não', this)" class="btn btn-outline-dark btn-sm">Turista</button>
-  </div>
-
-  <div class="row mb-3">
-    <div class="col-md-3">
-      <input type="date" id="dataInicio" class="form-control">
-    </div>
-    <div class="col-md-3">
-      <input type="date" id="dataFim" class="form-control">
-    </div>
-    <div class="col-md-2">
-      <button onclick="aplicarFiltro()" class="btn btn-primary w-100">Filtrar</button>
-    </div>
-    <div class="col-md-2">
-      <button onclick="limparFiltro()" class="btn btn-outline-secondary w-100">Limpar</button>
-    </div>
-  </div>
-
   <h5 class="mb-3">Últimas Respostas</h5>
 
   <table class="table-modern">
@@ -133,7 +105,7 @@
 
 <script src="config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="dashboard.css.js"></script>
+<script src="dashboard.js"></script>
 
 </body>
 </html>
