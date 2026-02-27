@@ -1,1 +1,16 @@
+table {
+  table-layout: fixed;
+  width: 100%;
+}
 
+th, td {
+  word-wrap: break-word;
+  vertical-align: top;
+}
+
+.col-data { width: 90px; }
+.col-nome { width: 160px; }
+.col-nps { width: 60px; text-align: center; }
+.col-morador { width: 120px; }
+.col-sugestao { width: 300px; }
+.col-nota { width: 80px; text-align: center; }
