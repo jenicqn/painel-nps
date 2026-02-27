@@ -67,16 +67,18 @@ function atualizarKPIs(dados) {
 
   const total = dados.length;
 
-  const npsGeral = calcularNPS(dados);
-
   const moradores = dados.filter(d =>
-  String(d.morador).toLowerCase().includes("morador")
-);
+    String(d.morador).toLowerCase().includes("morador")
+  );
 
-const turistas = dados.filter(d =>
-  String(d.morador).toLowerCase().includes("turista")
-);
+  const turistas = dados.filter(d =>
+    String(d.morador).toLowerCase().includes("turista")
+  );
 
+  const totalMoradores = moradores.length;
+  const totalTuristas = turistas.length;
+
+  const npsGeral = calcularNPS(dados);
   const npsMoradores = calcularNPS(moradores);
   const npsTuristas = calcularNPS(turistas);
 
@@ -89,8 +91,12 @@ const turistas = dados.filter(d =>
   document.getElementById('npsNeutros').textContent = neutros;
   document.getElementById('npsDetratores').textContent = detratores;
   document.getElementById('totalRespostas').textContent = total;
+
   document.getElementById('npsMoradores').textContent = npsMoradores;
   document.getElementById('npsTuristas').textContent = npsTuristas;
+
+  document.getElementById('totalMoradores').textContent = totalMoradores;
+  document.getElementById('totalTuristas').textContent = totalTuristas;
 }
 
 async function carregarRespostasHoje() {
