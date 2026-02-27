@@ -48,26 +48,26 @@
 
   <!-- FILTROS -->
   <div class="card p-3 mb-4">
-    <div class="row g-2">
+  <div class="row g-2">
 
-      <div class="col-md-4">
-        <select id="filtroStatus" class="form-select">
-          <option value="">Todos</option>
-          <option value="disponivel">Disponível</option>
-          <option value="utilizado">Utilizado</option>
-        </select>
-      </div>
-
-      <div class="col-md-4">
-        <input type="date" id="dataInicio" class="form-control">
-      </div>
-
-      <div class="col-md-4">
-        <button id="btnFiltrar" class="btn btn-primary w-100">Filtrar</button>
-      </div>
-
+    <div class="col-md-4">
+      <input type="month" id="filtroMes" class="form-control">
     </div>
+
+    <div class="col-md-4">
+      <select id="filtroStatus" class="form-select">
+        <option value="">Todos</option>
+        <option value="disponivel">Disponível</option>
+        <option value="utilizado">Utilizado</option>
+      </select>
+    </div>
+
+    <div class="col-md-4">
+      <button id="btnFiltrar" class="btn btn-primary w-100">Filtrar</button>
+    </div>
+
   </div>
+</div>
 
   <!-- TABELA -->
   <div class="card p-3">
