@@ -1,72 +1,65 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <title>Feedbacks</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Feedbacks - Smash do Cabo</title>
 
-  <style>
-    body {
-      display: flex;
-      margin: 0;
-    }
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="layout.css">
+<link rel="stylesheet" href="feedbacks.css">
 
-    #sidebar-container {
-      width: 250px;
-    }
-
-    .content {
-      flex: 1;
-      padding: 30px;
-    }
-  </style>
 </head>
 
 <body>
 
-  <!-- Sidebar será carregada aqui -->
-  <div id="sidebar-container"></div>
+<div id="sidebar-container"></div>
 
-  <!-- Conteúdo principal -->
-   <div class="content-wrapper">
+<div class="conteudo">
 
-    <h2 class="mb-4">Feedbacks</h2>
+  <div class="topbar d-flex justify-content-between align-items-center mb-4">
+    <h3>Feedbacks</h3>
+  </div>
 
-    <!-- FILTROS -->
-    <div class="row g-2 mb-3">
-      <div class="col-md-2">
-        <input type="text" id="buscarNome" class="form-control" placeholder="Buscar nome">
-      </div>
+  <!-- FILTROS -->
+  <div class="row g-2 mb-3">
 
-      <div class="col-md-2">
-        <select id="filtroMorador" class="form-select">
-          <option value="">Morador?</option>
-          <option value="sim">Sim</option>
-          <option value="não">Não</option>
-        </select>
-      </div>
-
-      <div class="col-md-2">
-        <input type="date" id="dataInicio" class="form-control">
-      </div>
-
-      <div class="col-md-2">
-        <input type="date" id="dataFim" class="form-control">
-      </div>
-
-      <div class="col-md-2">
-        <button id="btnFiltrar" class="btn btn-primary w-100">Filtrar</button>
-      </div>
-
-      <div class="col-md-2">
-        <button id="btnExportar" class="btn btn-success w-100">Exportar CSV</button>
-      </div>
+    <div class="col-md-2">
+      <input type="text" id="buscarNome" class="form-control" placeholder="Buscar nome">
     </div>
 
-    <div id="resumoLinha" class="mb-3 fw-bold"></div>
+    <div class="col-md-2">
+      <select id="filtroMorador" class="form-select">
+        <option value="">Morador?</option>
+        <option value="sim">Sim</option>
+        <option value="não">Não</option>
+      </select>
+    </div>
 
+    <div class="col-md-2">
+      <input type="date" id="dataInicio" class="form-control">
+    </div>
+
+    <div class="col-md-2">
+      <input type="date" id="dataFim" class="form-control">
+    </div>
+
+    <div class="col-md-2">
+      <button id="btnFiltrar" class="btn btn-primary w-100">Filtrar</button>
+    </div>
+
+    <div class="col-md-2">
+      <button id="btnExportar" class="btn btn-success w-100">Exportar CSV</button>
+    </div>
+
+  </div>
+
+  <div id="resumoLinha" class="mb-3 fw-bold"></div>
+
+  <!-- TABELA -->
+  <div class="card p-3">
     <div class="table-responsive">
-      <table class="table table-bordered table-striped">
+      <table class="table table-striped table-sm">
         <thead>
           <tr>
             <th onclick="ordenar('created_at')">Data</th>
@@ -83,18 +76,20 @@
         <tbody id="tabelaFeedbacks"></tbody>
       </table>
     </div>
-
-    <div class="d-flex justify-content-between align-items-center">
-      <button class="btn btn-secondary btnAnterior">Anterior</button>
-      <span id="paginaAtual"></span>
-      <button class="btn btn-secondary btnProxima">Próxima</button>
-    </div>
-
   </div>
 
-  <script src="config.js"></script>
-  <script src="sidebar.js"></script>
-  <script src="feedbacks.js"></script>
+  <!-- PAGINAÇÃO -->
+  <div class="d-flex justify-content-between align-items-center mt-3">
+    <button class="btn btn-secondary btnAnterior">Anterior</button>
+    <span id="paginaAtual"></span>
+    <button class="btn btn-secondary btnProxima">Próxima</button>
+  </div>
+
+</div>
+
+<script src="config.js"></script>
+<script src="sidebar.js"></script>
+<script src="feedbacks.js"></script>
 
 </body>
 </html>
