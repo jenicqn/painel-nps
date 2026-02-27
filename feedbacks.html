@@ -4,73 +4,96 @@
   <meta charset="UTF-8" />
   <title>Feedbacks</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <style>
+    body {
+      display: flex;
+      margin: 0;
+    }
+
+    #sidebar-container {
+      width: 250px;
+    }
+
+    .content {
+      flex: 1;
+      padding: 30px;
+    }
+  </style>
 </head>
-<body class="p-4">
 
-  <h2 class="mb-4">Feedbacks</h2>
+<body>
 
-  <!-- FILTROS -->
-  <div class="row g-2 mb-3">
-    <div class="col-md-2">
-      <input type="text" id="buscarNome" class="form-control" placeholder="Buscar nome">
+  <!-- Sidebar será carregada aqui -->
+  <div id="sidebar-container"></div>
+
+  <!-- Conteúdo principal -->
+  <div class="content">
+
+    <h2 class="mb-4">Feedbacks</h2>
+
+    <!-- FILTROS -->
+    <div class="row g-2 mb-3">
+      <div class="col-md-2">
+        <input type="text" id="buscarNome" class="form-control" placeholder="Buscar nome">
+      </div>
+
+      <div class="col-md-2">
+        <select id="filtroMorador" class="form-select">
+          <option value="">Morador?</option>
+          <option value="sim">Sim</option>
+          <option value="não">Não</option>
+        </select>
+      </div>
+
+      <div class="col-md-2">
+        <input type="date" id="dataInicio" class="form-control">
+      </div>
+
+      <div class="col-md-2">
+        <input type="date" id="dataFim" class="form-control">
+      </div>
+
+      <div class="col-md-2">
+        <button id="btnFiltrar" class="btn btn-primary w-100">Filtrar</button>
+      </div>
+
+      <div class="col-md-2">
+        <button id="btnExportar" class="btn btn-success w-100">Exportar CSV</button>
+      </div>
     </div>
 
-    <div class="col-md-2">
-      <select id="filtroMorador" class="form-select">
-        <option value="">Morador?</option>
-        <option value="sim">Sim</option>
-        <option value="não">Não</option>
-      </select>
+    <div id="resumoLinha" class="mb-3 fw-bold"></div>
+
+    <div class="table-responsive">
+      <table class="table table-bordered table-striped">
+        <thead>
+          <tr>
+            <th onclick="ordenar('created_at')">Data</th>
+            <th onclick="ordenar('nome')">Nome</th>
+            <th onclick="ordenar('indicacao')">NPS</th>
+            <th onclick="ordenar('morador')">Morador</th>
+            <th>Sugestão</th>
+            <th>Qualidade</th>
+            <th>Tempo</th>
+            <th>Variedade</th>
+            <th>Custo Benefício</th>
+          </tr>
+        </thead>
+        <tbody id="tabelaFeedbacks"></tbody>
+      </table>
     </div>
 
-    <div class="col-md-2">
-      <input type="date" id="dataInicio" class="form-control">
+    <div class="d-flex justify-content-between align-items-center">
+      <button class="btn btn-secondary btnAnterior">Anterior</button>
+      <span id="paginaAtual"></span>
+      <button class="btn btn-secondary btnProxima">Próxima</button>
     </div>
 
-    <div class="col-md-2">
-      <input type="date" id="dataFim" class="form-control">
-    </div>
-
-    <div class="col-md-2">
-      <button id="btnFiltrar" class="btn btn-primary w-100">Filtrar</button>
-    </div>
-
-    <div class="col-md-2">
-      <button id="btnExportar" class="btn btn-success w-100">Exportar CSV</button>
-    </div>
-  </div>
-
-  <!-- RESUMO -->
-  <div id="resumoLinha" class="mb-3 fw-bold"></div>
-
-  <!-- TABELA -->
-  <div class="table-responsive">
-    <table class="table table-bordered table-striped">
-      <thead>
-        <tr>
-          <th onclick="ordenar('created_at')">Data</th>
-          <th onclick="ordenar('nome')">Nome</th>
-          <th onclick="ordenar('indicacao')">NPS</th>
-          <th onclick="ordenar('morador')">Morador</th>
-          <th>Sugestão</th>
-          <th>Qualidade</th>
-          <th>Tempo</th>
-          <th>Variedade</th>
-          <th>Custo Benefício</th>
-        </tr>
-      </thead>
-      <tbody id="tabelaFeedbacks"></tbody>
-    </table>
-  </div>
-
-  <!-- PAGINAÇÃO -->
-  <div class="d-flex justify-content-between align-items-center">
-    <button class="btn btn-secondary btnAnterior">Anterior</button>
-    <span id="paginaAtual"></span>
-    <button class="btn btn-secondary btnProxima">Próxima</button>
   </div>
 
   <script src="config.js"></script>
+  <script src="sidebar.js"></script>
   <script src="feedbacks.js"></script>
 
 </body>
