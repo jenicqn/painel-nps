@@ -55,8 +55,25 @@ async function aplicarFiltro() {
   if (nome)
     dados = dados.filter(d => d.nome?.toLowerCase().includes(nome));
 
-  if (morador)
-    dados = dados.filter(d => String(d.morador).toLowerCase() === morador);
+  if (morador) {
+
+  dados = dados.filter(d => {
+
+    const valorBanco = String(d.morador || "")
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, ""); // remove acentos
+
+    const valorFiltro = morador
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "");
+
+    return valorBanco.includes(valorFiltro);
+
+  });
+
+}
 
   dadosAtuais = dados;
 
