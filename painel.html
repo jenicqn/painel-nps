@@ -97,6 +97,7 @@
         <th>Data</th>
         <th>Nome</th>
         <th>Sugestão</th>
+        <th>NPS</th>
         <th>Morador</th>
         <th>Qualidade</th>
         <th>Tempo</th>
@@ -191,7 +192,15 @@ function preencherTabela(dados) {
   const tbody = document.getElementById('ultimasRespostas');
   tbody.innerHTML = "";
 
-  const badge = (valor) => {
+  const badgeNota = (valor) => {
+    if (valor === null || valor === undefined) return "-";
+    const numero = Number(valor);
+    if (numero >= 9) return `<span class="badge badge-5">${numero}</span>`;
+    if (numero >= 7) return `<span class="badge badge-4">${numero}</span>`;
+    return `<span class="badge badge-3">${numero}</span>`;
+  };
+
+  const badgeInterno = (valor) => {
     if (valor === null || valor === undefined) return "-";
     const numero = Number(valor);
     if (numero >= 5) return `<span class="badge badge-5">${numero}</span>`;
@@ -206,10 +215,11 @@ function preencherTabela(dados) {
       <td>${r.nome || '-'}</td>
       <td>${r.sugestao || '-'}</td>
       <td>${r.morador || '-'}</td>
-      <td>${badge(r.qualidade)}</td>
-      <td>${badge(r.tempo)}</td>
-      <td>${badge(r.variedade)}</td>
-      <td>${badge(r.custobeneficio)}</td>
+      <td>${badgeNota(r.indicacao)}</td>
+      <td>${badgeInterno(r.qualidade)}</td>
+      <td>${badgeInterno(r.tempo)}</td>
+      <td>${badgeInterno(r.variedade)}</td>
+      <td>${badgeInterno(r.custobeneficio)}</td>
     `;
     tbody.appendChild(tr);
   });
