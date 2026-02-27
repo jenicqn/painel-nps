@@ -1,61 +1,58 @@
-<!-- layout.html -->
-<style>
-  .sidebar {
-    width: 220px;
-    background-color: #0f172a;
-    color: white;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-  }
-  .sidebar h4 {
-    padding: 20px;
-    margin: 0;
-    font-size: 20px;
-    font-weight: bold;
-    border-bottom: 1px solid #1e2a47;
-  }
-  .sidebar a {
-    display: block;
-    padding: 15px 20px;
-    color: white;
-    text-decoration: none;
-  }
-  .sidebar a:hover,
-  .sidebar a.active {
-    background-color: #1e2a47;
-  }
-  .logout-btn {
-    background: #dc3545;
-    color: white;
-    border: none;
-    padding: 12px 20px;
-    margin: 20px;
-    border-radius: 4px;
-    text-align: center;
-    cursor: pointer;
-  }
-</style>
-
 <div class="sidebar">
-  <div>
-    <h4>Painel</h4>
-    <a href="painel.html">Início</a>
-    <a href="cupons.html" data-only="adm">Cupons</a>
-    <a href="clientes.html" data-only="adm">Clientes</a>
-    <a href="pesquisas.html">Pesquisas</a>
-    <a href="respostas.html">Respostas</a>
-    <a href="relatorios.html" data-only="adm">Relatórios</a>
-    <a href="usuarios.html" data-only="adm">Usuários</a>
+
+  <div class="sidebar-top">
+    <div class="logo">
+      <span class="logo-dot"></span>
+      <span class="logo-text">Smash Insights</span>
+    </div>
+
+    <nav class="menu">
+      <a href="painel.html" class="menu-item">
+        <span>🏠</span>
+        <span>Início</span>
+      </a>
+
+      <a href="cupons.html" data-only="adm" class="menu-item">
+        <span>🎟️</span>
+        <span>Cupons</span>
+      </a>
+
+      <a href="clientes.html" data-only="adm" class="menu-item">
+        <span>👥</span>
+        <span>Clientes</span>
+      </a>
+
+      <a href="pesquisas.html" class="menu-item">
+        <span>📋</span>
+        <span>Pesquisas</span>
+      </a>
+
+      <a href="respostas.html" class="menu-item">
+        <span>💬</span>
+        <span>Respostas</span>
+      </a>
+
+      <a href="relatorios.html" data-only="adm" class="menu-item">
+        <span>📊</span>
+        <span>Relatórios</span>
+      </a>
+
+      <a href="usuarios.html" data-only="adm" class="menu-item">
+        <span>⚙️</span>
+        <span>Usuários</span>
+      </a>
+    </nav>
   </div>
-  <button class="logout-btn" onclick="logout()">Sair</button>
+
+  <div class="sidebar-bottom">
+    <button class="logout-btn" onclick="logout()">Sair</button>
+  </div>
+
 </div>
 
 <script>
   const nivel = localStorage.getItem('nivel');
 
-  // Esconde links exclusivos de adm se for 'user'
   if (nivel !== 'adm') {
     document.querySelectorAll('[data-only="adm"]').forEach(el => el.style.display = 'none');
   }
@@ -65,4 +62,12 @@
     localStorage.removeItem('nivel');
     window.location.href = 'index.html';
   }
+
+  // Destacar menu ativo automaticamente
+  const current = window.location.pathname.split("/").pop();
+  document.querySelectorAll(".menu-item").forEach(link => {
+    if (link.getAttribute("href") === current) {
+      link.classList.add("active");
+    }
+  });
 </script>
