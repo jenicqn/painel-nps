@@ -9,10 +9,9 @@ async function carregarDashboard() {
 
     const query = `
       ${SUPABASE_URL}/rest/v1/feedback_detalhado
-      ?select=indicacao,nome,sugestao,morador,qualidade,tempo,variedade,custobeneficio,created_at
+      ?select=indicacao,morador
       &created_at=gte.${inicioDia.toISOString()}
       &created_at=lt.${inicioProximoDia.toISOString()}
-      &order=created_at.desc
     `.replace(/\s+/g,'');
 
     const res = await fetch(query, {
@@ -27,7 +26,6 @@ async function carregarDashboard() {
     const dados = await res.json();
 
     atualizarKPIs(dados);
-    preencherTabela(dados);
 
   } catch (err) {
     console.error(err);
@@ -52,25 +50,25 @@ function calcularNPS(lista) {
 
 function atualizarGrafico(npsMoradores, npsTuristas) {
 
-  const ctx = document.getElementById('graficoMoradorTurista').getContext('2d');
+  const ctx = document.getElementById('graficoMoradorTurista');
+
+  if (!ctx) return;
+
+  const context = ctx.getContext('2d');
 
   if (graficoComparativo) graficoComparativo.destroy();
 
-  graficoComparativo = new Chart(ctx, {
+  graficoComparativo = new Chart(context, {
     type: 'bar',
     data: {
       labels: ['Moradores', 'Turistas'],
       datasets: [{
-        label: 'NPS',
         data: [npsMoradores, npsTuristas]
       }]
     },
     options: {
-      responsive: true,
       plugins: { legend: { display: false } },
-      scales: {
-        y: { min: -100, max: 100 }
-      }
+      scales: { y: { min: -100, max: 100 } }
     }
   });
 }
@@ -102,31 +100,4 @@ function atualizarKPIs(dados) {
   atualizarGrafico(npsMoradores, npsTuristas);
 }
 
-function preencherTabela(dados) {
-
-  const tbody = document.getElementById('ultimasRespostas');
-  tbody.innerHTML = "";
-
-  dados.slice(0, 20).forEach(r => {
-
-    const tr = document.createElement('tr');
-
-    tr.innerHTML = `
-      <td>${new Date(r.created_at).toLocaleDateString('pt-BR')}</td>
-      <td>${r.nome || '-'}</td>
-      <td>${r.sugestao || '-'}</td>
-      <td>${r.indicacao}</td>
-      <td>${r.morador || '-'}</td>
-      <td>${r.qualidade || '-'}</td>
-      <td>${r.tempo || '-'}</td>
-      <td>${r.variedade || '-'}</td>
-      <td>${r.custobeneficio || '-'}</td>
-    `;
-
-    tbody.appendChild(tr);
-  });
-}
-
-document.addEventListener("DOMContentLoaded", () => {
-  carregarDashboard();
-});
+document.addEventListener("DOMContentLoaded", carregarDashboard);
