@@ -99,62 +99,90 @@
     </table>
   </div>
 
-  <script>
-    // Carrega o layout lateral
-    fetch("layout.html")
-      .then(res => res.text())
-      .then(html => {
-        document.getElementById("menuLateral").innerHTML = html;
-      });
+<script>
+fetch("layout.html")
+  .then(res => res.text())
+  .then(html => {
+    document.getElementById("menuLateral").innerHTML = html;
+  });
 
-    const SUPABASE_URL = 'https://kwktdbinfadztnkghuul.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt3a3RkYmluZmFkenRua2dodXVsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc5NzI5NjAsImV4cCI6MjA2MzU0ODk2MH0.jN-ggFrIE1x_4kO8KE5G_bZq6V1yFT1El64oQ_ELubY';
+const SUPABASE_URL = 'https://kwktdbinfadztnkghuul.supabase.co';
+const SUPABASE_ANON_KEY = 'SUA_ANON_KEY_AQUI';
 
-    async function carregarPainel() {
-      const res = await fetch(`${SUPABASE_URL}/rest/v1/feedback_detalhado?select=*`, {
-        headers: {
-          apikey: SUPABASE_ANON_KEY,
-          Authorization: `Bearer ${SUPABASE_ANON_KEY}`
-        }
-      });
+const headers = {
+  apikey: SUPABASE_ANON_KEY,
+  Authorization: `Bearer ${SUPABASE_ANON_KEY}`
+};
 
-      const dados = await res.json();
-      const total = dados.length;
-      const promotores = dados.filter(d => d.indicacao >= 9).length;
-      const neutros = dados.filter(d => d.indicacao >= 7 && d.indicacao <= 8).length;
-      const detratores = dados.filter(d => d.indicacao <= 6).length;
-      const nps = ((promotores - detratores) / total) * 100;
+async function carregarPainel() {
+  try {
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/feedback_detalhado?select=*`,
+      { headers }
+    );
 
-      document.getElementById('npsGeral').textContent = nps.toFixed(0);
-      document.getElementById('npsPromotores').textContent = promotores;
-      document.getElementById('npsNeutros').textContent = neutros;
-      document.getElementById('npsDetratores').textContent = detratores;
-      document.getElementById('totalRespostas').textContent = total;
+    if (!res.ok) throw new Error("Erro ao buscar dados");
 
-      const ultimas = dados.reverse().slice(0, 20);
-      const tbody = document.getElementById('ultimasRespostas');
-      ultimas.forEach(r => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>${new Date(r.created_at).toLocaleDateString()}</td>
-          <td>${r.nome}</td>
-          <td>${r.sugestao || '-'}</td>
-          <td>${r.morador || '-'}</td>
-          <td>${r.qualidade || '-'}</td>
-          <td>${r.tempo || '-'}</td>
-          <td>${r.variedade || '-'}</td>
-          <td>${r.custo_beneficio || '-'}</td>
-        `;
-        tbody.appendChild(tr);
-      });
-    }
+    const dados = await res.json();
 
-    function logout() {
-      localStorage.removeItem('usuarioLogado');
-      window.location.href = 'index.html';
-    }
+    if (!Array.isArray(dados)) return;
 
-    carregarPainel();
-  </script>
+    const total = dados.length;
+
+    const promotores = dados.filter(d => d.indicacao >= 9).length;
+    const neutros = dados.filter(d => d.indicacao >= 7 && d.indicacao <= 8).length;
+    const detratores = dados.filter(d => d.indicacao <= 6).length;
+
+    const nps = total > 0
+      ? Math.round(((promotores - detratores) / total) * 100)
+      : 0;
+
+    document.getElementById('npsGeral').textContent = nps;
+    document.getElementById('npsPromotores').textContent = promotores;
+    document.getElementById('npsNeutros').textContent = neutros;
+    document.getElementById('npsDetratores').textContent = detratores;
+    document.getElementById('totalRespostas').textContent = total;
+
+    preencherTabela(dados);
+
+  } catch (err) {
+    console.error("Erro:", err);
+  }
+}
+
+function preencherTabela(dados) {
+  const tbody = document.getElementById('ultimasRespostas');
+  tbody.innerHTML = "";
+
+  const ordenado = [...dados].sort(
+    (a, b) => new Date(b.created_at) - new Date(a.created_at)
+  );
+
+  ordenado.slice(0, 20).forEach(r => {
+    const tr = document.createElement('tr');
+
+    tr.innerHTML = `
+      <td>${new Date(r.created_at).toLocaleDateString('pt-BR')}</td>
+      <td>${r.nome || '-'}</td>
+      <td>${r.sugestao || '-'}</td>
+      <td>${r.morador || '-'}</td>
+      <td>${r.qualidade || '-'}</td>
+      <td>${r.tempo || '-'}</td>
+      <td>${r.variedade || '-'}</td>
+      <td>${r.custo_beneficio || '-'}</td>
+    `;
+
+    tbody.appendChild(tr);
+  });
+}
+
+function logout() {
+  localStorage.removeItem('usuarioLogado');
+  window.location.href = 'index.html';
+}
+
+document.addEventListener("DOMContentLoaded", carregarPainel);
+</script>
+
 </body>
 </html>
