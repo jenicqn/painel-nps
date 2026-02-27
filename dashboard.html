@@ -21,7 +21,7 @@
     <span>Olá, <strong id="nomeUsuario"></strong></span>
   </div>
 
-  <!-- KPIs -->
+  <!-- KPIs MENSAIS -->
   <div class="row g-4 mb-4">
 
     <div class="col-md-3">
@@ -75,40 +75,29 @@
 
   </div>
 
-  <!-- Gráfico -->
-  <div class="card p-4 mb-4">
-    <h5 class="mb-3">Comparativo NPS Moradores vs Turistas</h5>
-    <canvas id="graficoMoradorTurista"></canvas>
-  </div>
-
+  <!-- MINI TABELA DIÁRIA -->
   <div class="card p-3">
-  <h6>Feedbacks de Hoje</h6>
-  <table class="table table-sm">
-    <thead>
-      <tr>
-        <th>Nome</th>
-        <th>NPS</th>
-      </tr>
-    </thead>
-    <tbody id="tabelaHoje"></tbody>
-  </table>
-</div>
+    <h6>Feedbacks de Hoje</h6>
+    <table class="table table-sm">
+      <thead>
+        <tr>
+          <th>Nome</th>
+          <th>NPS</th>
+        </tr>
+      </thead>
+      <tbody id="tabelaHoje"></tbody>
+    </table>
+  </div>
 
 </div>
 
 <script src="config.js"></script>
 <script src="sidebar.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="dashboard.js"></script>
 
 <script>
-// Guard de sessão
 const usuario = JSON.parse(localStorage.getItem("usuario"));
-if (!usuario) {
-  window.location.href = "index.html";
-}
-
-// Nome dinâmico
+if (!usuario) window.location.href = "index.html";
 document.getElementById("nomeUsuario").textContent = usuario.nome || "Usuário";
 </script>
 
