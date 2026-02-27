@@ -4,6 +4,10 @@ let dadosAtuais = [];
 let colunaOrdenacao = "created_at";
 let direcaoOrdenacao = "desc";
 
+/* =========================
+   UTILITÁRIOS
+========================= */
+
 function formatarData(data) {
   return new Date(data).toLocaleDateString("pt-BR");
 }
@@ -13,13 +17,19 @@ function formatarDataISO(data) {
 }
 
 function mesAtualPadrao() {
+
   const hoje = new Date();
+
   const inicio = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
-  const fim = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 1);
+  const fim = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0);
 
   document.getElementById("dataInicio").value = formatarDataISO(inicio);
   document.getElementById("dataFim").value = formatarDataISO(fim);
 }
+
+/* =========================
+   FILTRO
+========================= */
 
 async function aplicarFiltro() {
 
@@ -31,7 +41,7 @@ async function aplicarFiltro() {
   let query = `${SUPABASE_URL}/rest/v1/feedback_detalhado?select=*`;
 
   if (dataInicio) query += `&created_at=gte.${dataInicio}`;
-  if (dataFim) query += `&created_at=lt.${dataFim}`;
+  if (dataFim) query += `&created_at=lte.${dataFim}`;
 
   const res = await fetch(query, {
     headers: {
@@ -49,12 +59,17 @@ async function aplicarFiltro() {
     dados = dados.filter(d => String(d.morador).toLowerCase() === morador);
 
   dadosAtuais = dados;
+
   ordenarDados();
   pagina = 1;
 
   atualizarResumo(dados);
   renderizarTabela();
 }
+
+/* =========================
+   ORDENAÇÃO
+========================= */
 
 function ordenar(coluna) {
 
@@ -89,6 +104,10 @@ function ordenarDados() {
     return 0;
   });
 }
+
+/* =========================
+   RESUMO
+========================= */
 
 function badgeNPS(valor) {
   if (valor >= 9) return `<span class="badge bg-success">${valor}</span>`;
@@ -138,6 +157,10 @@ function atualizarResumo(dados) {
      Média Qualidade: <strong>${mediaQualidade}</strong>`;
 }
 
+/* =========================
+   TABELA
+========================= */
+
 function renderizarTabela() {
 
   const tbody = document.getElementById("tabelaFeedbacks");
@@ -168,11 +191,15 @@ function renderizarTabela() {
   const totalPaginas = Math.ceil(dadosAtuais.length / limite);
 
   document.getElementById("paginaAtual").textContent =
-    `Página ${pagina} de ${totalPaginas}`;
+    `Página ${pagina} de ${totalPaginas || 1}`;
 
   document.querySelector(".btnAnterior").disabled = pagina === 1;
-  document.querySelector(".btnProxima").disabled = pagina === totalPaginas;
+  document.querySelector(".btnProxima").disabled = pagina === totalPaginas || totalPaginas === 0;
 }
+
+/* =========================
+   PAGINAÇÃO
+========================= */
 
 function proximaPagina() {
   if (pagina * limite < dadosAtuais.length) {
@@ -187,6 +214,10 @@ function paginaAnterior() {
     renderizarTabela();
   }
 }
+
+/* =========================
+   EXPORTAR CSV
+========================= */
 
 function exportarCSV() {
 
@@ -228,9 +259,14 @@ function exportarCSV() {
   document.body.removeChild(link);
 }
 
+/* =========================
+   INICIALIZAÇÃO
+========================= */
+
 document.addEventListener("DOMContentLoaded", () => {
 
   mesAtualPadrao();
+  aplicarFiltro();
 
   document.getElementById("btnFiltrar")
     .addEventListener("click", aplicarFiltro);
@@ -244,5 +280,4 @@ document.addEventListener("DOMContentLoaded", () => {
   document.querySelector(".btnProxima")
     .addEventListener("click", proximaPagina);
 
-  aplicarFiltro();
 });
