@@ -1,5 +1,6 @@
 let filtroTipoAtual = null;
 let filtroMoradorAtual = null;
+let graficoComparativo = null;
 
 fetch("layout.html")
   .then(res => res.text())
@@ -62,6 +63,38 @@ function calcularNPS(lista) {
     : 0;
 }
 
+function atualizarGrafico(npsMoradores, npsTuristas) {
+
+  const ctx = document.getElementById('graficoMoradorTurista').getContext('2d');
+
+  if (graficoComparativo) {
+    graficoComparativo.destroy();
+  }
+
+  graficoComparativo = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: ['Moradores', 'Turistas'],
+      datasets: [{
+        label: 'NPS',
+        data: [npsMoradores, npsTuristas]
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { display: false }
+      },
+      scales: {
+        y: {
+          min: -100,
+          max: 100
+        }
+      }
+    }
+  });
+}
+
 function atualizarKPIs(dados) {
 
   const total = dados.length;
@@ -86,6 +119,8 @@ function atualizarKPIs(dados) {
 
   document.getElementById('npsMoradores').textContent = npsMoradores;
   document.getElementById('npsTuristas').textContent = npsTuristas;
+
+  atualizarGrafico(npsMoradores, npsTuristas);
 }
 
 function preencherTabela(dados) {
