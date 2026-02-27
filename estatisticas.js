@@ -2,9 +2,7 @@ let graficoEvolucao;
 let graficoDistribuicao;
 let graficoSegmento;
 
-/* ========================
-   UTIL
-======================== */
+/* ===================== UTIL ===================== */
 
 function formatarISO(data) {
   return data.toISOString().split("T")[0];
@@ -13,24 +11,19 @@ function formatarISO(data) {
 function mesAtual() {
   const hoje = new Date();
   const inicio = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
-  const fim = new Date();
-
   document.getElementById("dataInicio").value = formatarISO(inicio);
-  document.getElementById("dataFim").value = formatarISO(fim);
+  document.getElementById("dataFim").value = formatarISO(hoje);
 }
 
 function ultimos30Dias() {
   const hoje = new Date();
   const inicio = new Date();
   inicio.setDate(hoje.getDate() - 30);
-
   document.getElementById("dataInicio").value = formatarISO(inicio);
   document.getElementById("dataFim").value = formatarISO(hoje);
 }
 
-/* ========================
-   FETCH DADOS
-======================== */
+/* ===================== FETCH ===================== */
 
 async function buscarDados() {
 
@@ -52,9 +45,7 @@ async function buscarDados() {
   return await res.json();
 }
 
-/* ========================
-   PROCESSAMENTO
-======================== */
+/* ===================== PROCESSAMENTO ===================== */
 
 function calcularNPS(lista) {
 
@@ -69,7 +60,7 @@ function calcularNPS(lista) {
   const total = lista.length;
 
   return total > 0
-    ? ((promotores - detratores) / total) * 100
+    ? Math.round(((promotores - detratores) / total) * 100)
     : 0;
 }
 
@@ -79,7 +70,6 @@ function agruparPorDia(lista) {
 
   lista.forEach(d => {
     const dia = d.created_at.split("T")[0];
-
     if (!grupos[dia]) grupos[dia] = [];
     grupos[dia].push(d);
   });
@@ -87,18 +77,33 @@ function agruparPorDia(lista) {
   return grupos;
 }
 
-/* ========================
-   GRÁFICOS
-======================== */
+function atualizarKPIs(dados) {
+
+  const total = dados.length;
+  const nps = calcularNPS(dados);
+
+  const moradores = dados.filter(d =>
+    String(d.morador).toLowerCase().includes("sim")
+  ).length;
+
+  const mediaQualidade = total
+    ? (dados.reduce((s, d) => s + Number(d.qualidade || 0), 0) / total).toFixed(1)
+    : 0;
+
+  document.getElementById("kpiNPS").textContent = nps;
+  document.getElementById("kpiTotal").textContent = total;
+  document.getElementById("kpiMoradores").textContent =
+    total ? Math.round((moradores / total) * 100) + "%" : "0%";
+  document.getElementById("kpiQualidade").textContent = mediaQualidade;
+}
+
+/* ===================== GRÁFICOS ===================== */
 
 function criarGraficoEvolucao(dados) {
 
   const grupos = agruparPorDia(dados);
-
   const labels = Object.keys(grupos).sort();
-  const valores = labels.map(dia =>
-    calcularNPS(grupos[dia])
-  );
+  const valores = labels.map(dia => calcularNPS(grupos[dia]));
 
   if (graficoEvolucao) graficoEvolucao.destroy();
 
@@ -111,9 +116,19 @@ function criarGraficoEvolucao(dados) {
         datasets: [{
           label: "NPS",
           data: valores,
-          borderWidth: 2,
-          tension: 0.3
+          borderColor: "#2563eb",
+          backgroundColor: "rgba(37,99,235,0.15)",
+          fill: true,
+          tension: 0.4,
+          pointRadius: 4,
+          pointBackgroundColor: "#2563eb"
         }]
+      },
+      options: {
+        scales: {
+          y: { min: 0, max: 100 }
+        },
+        plugins: { legend: { display: false } }
       }
     }
   );
@@ -137,10 +152,15 @@ function criarDistribuicao(dados) {
       data: {
         labels: ["0","1","2","3","4","5","6","7","8","9","10"],
         datasets: [{
-          label: "Quantidade",
-          data: contagem
+          data: contagem,
+          backgroundColor: contagem.map((_, i) => {
+            if (i >= 9) return "#16a34a";
+            if (i >= 7) return "#f59e0b";
+            return "#dc2626";
+          })
         }]
-      }
+      },
+      options: { plugins: { legend: { display: false } } }
     }
   );
 }
@@ -152,7 +172,6 @@ function criarSegmento(dados) {
 
   dados.forEach(d => {
     const valor = String(d.morador || "").toLowerCase();
-
     if (valor.includes("sim")) moradores++;
     else turistas++;
   });
@@ -166,19 +185,19 @@ function criarSegmento(dados) {
       data: {
         labels: ["Moradores", "Turistas"],
         datasets: [{
-          data: [moradores, turistas]
+          data: [moradores, turistas],
+          backgroundColor: ["#2563eb", "#f97316"]
         }]
       }
     }
   );
 }
 
-/* ========================
-   INICIALIZAÇÃO
-======================== */
+/* ===================== INICIALIZAÇÃO ===================== */
 
 async function atualizarGraficos() {
   const dados = await buscarDados();
+  atualizarKPIs(dados);
   criarGraficoEvolucao(dados);
   criarDistribuicao(dados);
   criarSegmento(dados);
