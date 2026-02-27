@@ -117,39 +117,53 @@
     const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     async function logar() {
-      const email = document.getElementById('email').value.trim();
-      const senha = document.getElementById('senha').value.trim();
-      const erro = document.getElementById('erro');
+  const email = document.getElementById('email').value.trim();
+  const senha = document.getElementById('senha').value.trim();
+  const erro = document.getElementById('erro');
 
-      if (!email || !senha) {
-        erro.textContent = "Preencha todos os campos";
-        return;
-      }
+  erro.textContent = "";
 
-      try {
-        const res = await fetch(`${SUPABASE_URL}/rest/v1/usuarios_painel?email=eq.${email}`, {
-          headers: {
-            'apikey': SUPABASE_KEY,
-            'Authorization': 'Bearer ' + SUPABASE_KEY,
-            'Content-Type': 'application/json'
-          }
-        });
+  if (!email || !senha) {
+    erro.textContent = "Preencha todos os campos";
+    return;
+  }
 
-        const data = await res.json();
+  // 1️⃣ Autentica no Supabase
+  const { data, error } = await client.auth.signInWithPassword({
+    email: email,
+    password: senha
+  });
 
-        if (!data.length || data[0].senha !== senha) {
-          erro.textContent = "Usuário ou senha inválidos";
-          return;
-        }
+  if (error) {
+    erro.textContent = "Usuário ou senha inválidos";
+    return;
+  }
 
-        localStorage.setItem("usuario", JSON.stringify(data[0]));
-        localStorage.setItem("nivel", data[0].nivel);
-        window.location.href = "painel.html";
-      } catch (e) {
-        erro.textContent = "Erro ao conectar com o servidor";
-        console.error(e);
-      }
-    }
+  const user = data.user;
+
+  // 2️⃣ Busca perfil pelo UUID
+  const { data: profile, error: profileError } = await client
+    .from("profiles")
+    .select("*")
+    .eq("id", user.id)
+    .single();
+
+  if (profileError || !profile) {
+    erro.textContent = "Usuário sem perfil configurado";
+    return;
+  }
+
+  if (!profile.ativo) {
+    erro.textContent = "Usuário inativo";
+    return;
+  }
+
+  // 3️⃣ Salva permissões
+  localStorage.setItem("nivel", profile.nivel);
+  localStorage.setItem("usuario", JSON.stringify(profile));
+
+  window.location.href = "painel.html";
+}
 
     async function redefinirSenha() {
       const email = prompt("Digite seu email:");
