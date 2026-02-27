@@ -212,11 +212,24 @@ function gerarWordCloud(dados) {
   }
 
   WordCloud(container, {
-    list: lista,
-    gridSize: 6,
-    weightFactor: 12,
-    backgroundColor: "#ffffff"
-  });
+  list: lista,
+  gridSize: 8,
+  weightFactor: function (size) {
+    return size * 8;
+  },
+  fontFamily: 'Segoe UI',
+  color: function (word, weight) {
+    if (weight >= 8) return "#1e3a8a";      // azul escuro dominante
+    if (weight >= 5) return "#2563eb";      // azul
+    if (weight >= 3) return "#16a34a";      // verde
+    return "#64748b";                       // neutro
+  },
+  backgroundColor: "#ffffff",
+  rotateRatio: 0.1,      // quase sem rotação
+  rotationSteps: 2,
+  minSize: 14,
+  shrinkToFit: true
+});
 }
 
 /* ================= INIT ================= */
