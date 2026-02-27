@@ -160,6 +160,20 @@ function atualizarResumo(dados) {
 /* =========================
    TABELA
 ========================= */
+function formatarMorador(valor) {
+
+  const texto = String(valor).toLowerCase();
+
+  if (texto.includes("sim")) {
+    return `<span class="badge bg-success">Morador</span>`;
+  }
+
+  if (texto.includes("não") || texto.includes("nao")) {
+    return `<span class="badge bg-secondary">Turista</span>`;
+  }
+
+  return "-";
+}
 
 function renderizarTabela() {
 
@@ -178,7 +192,7 @@ function renderizarTabela() {
         <td>${formatarData(r.created_at)}</td>
         <td>${r.nome || "-"}</td>
         <td>${badgeNPS(r.indicacao)}</td>
-        <td>${r.morador}</td>
+        <td>${formatarMorador(r.morador)}</td>
         <td>${r.sugestao || "-"}</td>
         <td>${r.qualidade}</td>
         <td>${r.tempo}</td>
