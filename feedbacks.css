@@ -10,7 +10,18 @@ th, td {
 
 .col-data { width: 90px; }
 .col-nome { width: 180px; }
-.col-nps { width: 60px; text-align: center; }
-.col-morador { width: 140px; }
+.col-nps { 
+  width: 90px; 
+  text-align: center;
+}
+
+.col-morador { 
+  width: 160px;
+}
+
+td.col-nps,
+th.col-nps {
+  padding-right: 20px;
+}
 .col-sugestao { width: 380px; }
 .col-nota { width: 80px; text-align: center; }
