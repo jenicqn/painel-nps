@@ -69,6 +69,11 @@
   <button onclick="filtrarTipo('neutros', this)" class="btn btn-outline-warning btn-sm">Neutros</button>
   <button onclick="filtrarTipo('detratores', this)" class="btn btn-outline-danger btn-sm">Detratores</button>
 </div>
+  <div class="mb-3 d-flex gap-2 flex-wrap" id="filtrosMorador">
+  <button onclick="filtrarMorador(null, this)" class="btn btn-outline-secondary btn-sm active">Todos</button>
+  <button onclick="filtrarMorador('Sim', this)" class="btn btn-outline-primary btn-sm">Morador</button>
+  <button onclick="filtrarMorador('Não', this)" class="btn btn-outline-dark btn-sm">Turista</button>
+</div>
   
   <div class="row mb-3">
     <div class="col-md-3">
@@ -115,6 +120,7 @@
 
 <script>
   let filtroTipoAtual = null;
+  let filtroMoradorAtual = null;
 
 fetch("layout.html")
   .then(res => res.text())
@@ -122,7 +128,7 @@ fetch("layout.html")
     document.getElementById("menuLateral").innerHTML = html;
   });
 
-async function carregarPainel(dataInicio = null, dataFim = null, tipo = null) {
+async function carregarPainel(dataInicio = null, dataFim = null, tipo = null, morador = null) {
   try {
 
     let query = `
@@ -145,6 +151,9 @@ async function carregarPainel(dataInicio = null, dataFim = null, tipo = null) {
     if (tipo === "detratores") {
       query += `&indicacao=lte.6`;
     }
+    if (morador) {
+  query += `&morador=eq.${morador}`;
+}
 
     const res = await fetch(query, {
       headers: {
@@ -163,6 +172,21 @@ async function carregarPainel(dataInicio = null, dataFim = null, tipo = null) {
   } catch (err) {
     console.error("Erro:", err);
   }
+}
+
+  function filtrarMorador(valor, botao) {
+  filtroMoradorAtual = valor;
+
+  document.querySelectorAll("#filtrosMorador button").forEach(btn => {
+    btn.classList.remove("active");
+  });
+
+  if (botao) botao.classList.add("active");
+
+  const inicio = document.getElementById('dataInicio').value || null;
+  const fim = document.getElementById('dataFim').value || null;
+
+  carregarPainel(inicio, fim, filtroTipoAtual, valor);
 }
 
 function atualizarKPIs(dados) {
@@ -214,8 +238,8 @@ function preencherTabela(dados) {
       <td>${new Date(r.created_at).toLocaleDateString('pt-BR')}</td>
       <td>${r.nome || '-'}</td>
       <td>${r.sugestao || '-'}</td>
-      <td>${r.morador || '-'}</td>
       <td>${badgeNota(r.indicacao)}</td>
+      <td>${r.morador || '-'}</td>
       <td>${badgeInterno(r.qualidade)}</td>
       <td>${badgeInterno(r.tempo)}</td>
       <td>${badgeInterno(r.variedade)}</td>
@@ -229,7 +253,8 @@ function aplicarFiltro() {
   carregarPainel(
     document.getElementById('dataInicio').value || null,
     document.getElementById('dataFim').value || null,
-    filtroTipoAtual
+    filtroTipoAtual,
+    filtroMoradorAtual
   );
 }
 
@@ -241,18 +266,16 @@ function limparFiltro() {
 function filtrarTipo(tipo, botao) {
   filtroTipoAtual = tipo;
 
-  // Remove ativo
   document.querySelectorAll("#filtrosTipo button").forEach(btn => {
     btn.classList.remove("active");
   });
 
-  // Ativa o clicado
   if (botao) botao.classList.add("active");
 
   const inicio = document.getElementById('dataInicio').value || null;
   const fim = document.getElementById('dataFim').value || null;
 
-  carregarPainel(inicio, fim, tipo);
+  carregarPainel(inicio, fim, tipo, filtroMoradorAtual);
 }
   
 function filtroMesAtual() {
@@ -268,7 +291,7 @@ function filtroMesAtual() {
   document.getElementById("dataInicio").value = inicio;
   document.getElementById("dataFim").value = fim;
 
-  carregarPainel(inicio, fim, filtroTipoAtual);
+carregarPainel(inicio, fim, filtroTipoAtual, filtroMoradorAtual);
 }
 
 document.addEventListener("DOMContentLoaded", () => {
