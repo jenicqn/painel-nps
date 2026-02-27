@@ -176,16 +176,23 @@ function criarSegmento(dados) {
 
 /* ================= NUVEM ================= */
 
+/* ================= NUVEM ================= */
+
 function gerarWordCloud(dados) {
 
-  const container = document.getElementById("wordCloud");
-  container.innerHTML = "";
+  const container = document.getElementById('wordCloud');
+  container.innerHTML = ""; // limpa antes de gerar
 
-  const stopwords = ["de","da","do","e","para","pra","com","que","mais","muito","uma","um"];
+  const stopwords = [
+    "de","da","do","das","dos","e","é","foi","muito","muita",
+    "para","pra","o","a","os","as","um","uma","no","na",
+    "com","que","mais","mas","ja","eu","meu","minha"
+  ];
 
   const contador = {};
 
   dados.forEach(item => {
+
     if (!item.sugestao) return;
 
     const palavras = item.sugestao
@@ -196,47 +203,53 @@ function gerarWordCloud(dados) {
       .split(" ");
 
     palavras.forEach(p => {
+
       if (p.length < 4) return;
       if (stopwords.includes(p)) return;
+
       contador[p] = (contador[p] || 0) + 1;
+
     });
+
   });
 
   const lista = Object.entries(contador)
     .sort((a,b) => b[1] - a[1])
-    .slice(0, 50);
+    .slice(0, 40);
 
-  if (!lista.length) {
-    container.innerHTML = "<p class='text-muted'>Sem palavras no período.</p>";
+  if (lista.length === 0) {
+    container.innerHTML =
+      "<div style='text-align:center;padding:40px;color:#888'>Sem dados no período</div>";
     return;
   }
 
+  const maiorPeso = lista[0][1];
+
   WordCloud(container, {
-  list: lista,
-  gridSize: 8,
-  weightFactor: function (size) {
-    return size * 8;
-  },
-  fontFamily: 'Segoe UI',
-  color: function (word, weight) {
+    list: lista,
+    gridSize: 10,
+    weightFactor: function(size) {
+      return (size / maiorPeso) * 80; // normaliza
+    },
+    fontFamily: 'Segoe UI',
+    color: function () {
+      const cores = [
+        "#60a5fa",
+        "#93c5fd",
+        "#86efac",
+        "#fde68a",
+        "#fca5a5",
+        "#c4b5fd",
+        "#67e8f9"
+      ];
+      return cores[Math.floor(Math.random()*cores.length)];
+    },
+    backgroundColor: "#ffffff",
+    rotateRatio: 0.1,
+    minSize: 18,
+    shrinkToFit: true
+  });
 
-    const cores = [
-      "#60a5fa", // azul claro
-      "#93c5fd", // azul suave
-      "#86efac", // verde claro
-      "#fde68a", // amarelo suave
-      "#fca5a5", // vermelho claro
-      "#c4b5fd", // roxo suave
-      "#67e8f9"  // ciano claro
-    ];
-
-    return cores[Math.floor(Math.random() * cores.length)];
-  },
-  backgroundColor: "#ffffff",
-  rotateRatio: 0.1,
-  minSize: 14,
-  shrinkToFit: true
-});
 }
 
 /* ================= INIT ================= */
