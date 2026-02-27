@@ -193,6 +193,56 @@ function criarSegmento(dados) {
   );
 }
 
+/* ===================== NUVEM DE PALAVRAS ===================== */
+
+function gerarWordCloud(dados) {
+
+  const stopwords = [
+    "de","da","do","das","dos","e","é","foi","muito","muita",
+    "para","pra","o","a","os","as","um","uma","no","na",
+    "com","que","mais","mas","já","eu","meu","minha"
+  ];
+
+  const contador = {};
+
+  dados.forEach(item => {
+
+    if (!item.sugestao) return;
+
+    const palavras = item.sugestao
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^\w\s]/gi, "")
+      .split(" ");
+
+    palavras.forEach(p => {
+
+      if (p.length < 4) return;
+      if (stopwords.includes(p)) return;
+
+      contador[p] = (contador[p] || 0) + 1;
+
+    });
+
+  });
+
+  const lista = Object.entries(contador)
+    .sort((a,b) => b[1] - a[1])
+    .slice(0, 40);
+
+  WordCloud(document.getElementById('wordCloud'), {
+    list: lista,
+    gridSize: 8,
+    weightFactor: 10,
+    fontFamily: 'Segoe UI',
+    color: function () {
+      return ["#1e3a8a","#2563eb","#0ea5e9","#16a34a","#f59e0b"]
+        [Math.floor(Math.random()*5)];
+    },
+    backgroundColor: '#ffffff'
+  });
+}
 /* ===================== INICIALIZAÇÃO ===================== */
 
 async function atualizarGraficos() {
