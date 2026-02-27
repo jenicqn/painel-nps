@@ -17,7 +17,7 @@
 <div class="conteudo">
 
   <div class="topbar d-flex justify-content-between align-items-center mb-4">
-    <h3>Dashboard</h3>
+    <h3>Dashboard - Mês: <span id="mesAtual"></span></h3>
     <span>Olá, <strong id="nomeUsuario"></strong></span>
   </div>
 
@@ -80,6 +80,19 @@
     <h5 class="mb-3">Comparativo NPS Moradores vs Turistas</h5>
     <canvas id="graficoMoradorTurista"></canvas>
   </div>
+
+  <div class="card p-3">
+  <h6>Feedbacks de Hoje</h6>
+  <table class="table table-sm">
+    <thead>
+      <tr>
+        <th>Nome</th>
+        <th>NPS</th>
+      </tr>
+    </thead>
+    <tbody id="tabelaHoje"></tbody>
+  </table>
+</div>
 
 </div>
 
