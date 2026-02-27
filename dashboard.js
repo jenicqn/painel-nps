@@ -3,16 +3,36 @@ let graficoComparativo = null;
 async function carregarDashboard() {
   try {
 
-    const hoje = new Date();
-    const inicioDia = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
-    const inicioProximoDia = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate() + 1);
+const hoje = new Date();
 
-    const query = `
-      ${SUPABASE_URL}/rest/v1/feedback_detalhado
-      ?select=indicacao,morador
-      &created_at=gte.${inicioDia.toISOString()}
-      &created_at=lt.${inicioProximoDia.toISOString()}
-    `.replace(/\s+/g,'');
+const inicioDia = new Date(
+  hoje.getFullYear(),
+  hoje.getMonth(),
+  hoje.getDate()
+);
+
+const inicioProximoDia = new Date(
+  hoje.getFullYear(),
+  hoje.getMonth(),
+  hoje.getDate() + 1
+);
+
+function formatarDataLocal(data) {
+  const ano = data.getFullYear();
+  const mes = String(data.getMonth() + 1).padStart(2, '0');
+  const dia = String(data.getDate()).padStart(2, '0');
+  return `${ano}-${mes}-${dia}`;
+}
+
+const dataInicio = formatarDataLocal(inicioDia);
+const dataFim = formatarDataLocal(inicioProximoDia);
+
+const query = `
+  ${SUPABASE_URL}/rest/v1/feedback_detalhado
+  ?select=indicacao,morador
+  &created_at=gte.${dataInicio}
+  &created_at=lt.${dataFim}
+`.replace(/\s+/g,'');
 
     const res = await fetch(query, {
       headers: {
