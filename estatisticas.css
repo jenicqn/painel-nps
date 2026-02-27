@@ -1,0 +1,13 @@
+.filtro-global {
+  background: white;
+  border-radius: 10px;
+}
+
+.card {
+  border: none;
+  border-radius: 12px;
+}
+
+canvas {
+  max-height: 350px;
+}
