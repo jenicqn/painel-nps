@@ -107,7 +107,7 @@ fetch("layout.html")
   });
 
 const SUPABASE_URL = 'https://kwktdbinfadztnkghuul.supabase.co';
-const SUPABASE_ANON_KEY = 'SUA_ANON_KEY_AQUI';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxlZXpwbXBtcWtpb2N2dnBjd3FhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE5NTI2NTUsImV4cCI6MjA4NzUyODY1NX0.M-TpjLCmwA6jyUFXG33o-L8O_1o84Ap4GM9vtxAa4KQ';
 
 const headers = {
   apikey: SUPABASE_ANON_KEY,
@@ -117,7 +117,7 @@ const headers = {
 async function carregarPainel() {
   try {
     const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/feedback_detalhado?select=*`,
+      `${SUPABASE_URL}/rest/v1/feedback_detalhado?select=indicacao,nome,sugestao,morador,qualidade,tempo,variedade,custo_beneficio,created_at`,
       { headers }
     );
 
