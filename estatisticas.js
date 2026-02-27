@@ -176,8 +176,6 @@ function criarSegmento(dados) {
 
 /* ================= NUVEM ================= */
 
-/* ================= NUVEM ================= */
-
 function gerarWordCloud(dados) {
 
   const container = document.getElementById('wordCloud');
@@ -226,29 +224,30 @@ function gerarWordCloud(dados) {
   const maiorPeso = lista[0][1];
 
   WordCloud(container, {
-    list: lista,
-    gridSize: 10,
-    weightFactor: function(size) {
-      return (size / maiorPeso) * 80; // normaliza
-    },
-    fontFamily: 'Segoe UI',
-    color: function () {
-      const cores = [
-        "#60a5fa",
-        "#93c5fd",
-        "#86efac",
-        "#fde68a",
-        "#fca5a5",
-        "#c4b5fd",
-        "#67e8f9"
-      ];
-      return cores[Math.floor(Math.random()*cores.length)];
-    },
-    backgroundColor: "#ffffff",
-    rotateRatio: 0.1,
-    minSize: 18,
-    shrinkToFit: true
-  });
+  list: lista,
+  gridSize: 6,
+  weightFactor: function(size) {
+    return (size / maiorPeso) * 100; // aumenta intensidade
+  },
+  fontFamily: 'Segoe UI',
+  color: function () {
+
+    const cores = [
+      "#3b82f6", // azul vibrante
+      "#22c55e", // verde forte
+      "#facc15", // amarelo vivo
+      "#ef4444", // vermelho vivo
+      "#a855f7", // roxo forte
+      "#06b6d4"  // ciano vibrante
+    ];
+
+    return cores[Math.floor(Math.random()*cores.length)];
+  },
+  backgroundColor: "#ffffff",
+  rotateRatio: 0.08,
+  minSize: 22,
+  shrinkToFit: true
+});
 
 }
 
