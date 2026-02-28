@@ -8,6 +8,13 @@
       "destination": "/pesquisa/index.html"
     },
     {
+      "source": "/(.*)",
+      "has": [
+        { "type": "host", "value": "pesquisa.smashdocabo.com" }
+      ],
+      "destination": "/pesquisa/$1"
+    },
+    {
       "source": "/",
       "has": [
         { "type": "host", "value": "verificacupom.smashdocabo.com" }
@@ -15,11 +22,25 @@
       "destination": "/verificacupom/index.html"
     },
     {
+      "source": "/(.*)",
+      "has": [
+        { "type": "host", "value": "verificacupom.smashdocabo.com" }
+      ],
+      "destination": "/verificacupom/$1"
+    },
+    {
       "source": "/",
       "has": [
         { "type": "host", "value": "painel.smashdocabo.com" }
       ],
       "destination": "/painel/dashboard.html"
+    },
+    {
+      "source": "/(.*)",
+      "has": [
+        { "type": "host", "value": "painel.smashdocabo.com" }
+      ],
+      "destination": "/painel/$1"
     }
   ]
 }
