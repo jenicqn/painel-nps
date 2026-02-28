@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Verificação de Cupom - Smash do Cabo</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="container">
+    <img src="logo.png" alt="Logo Smash do Cabo" class="logo" />
+
+    <h1>Verificação de Cupom</h1>
+    <p class="subtitulo">Digite o código apresentado pelo cliente</p>
+
+    <form id="formCupom" autocomplete="off">
+      <div class="input-wrap">
+        <input
+          type="text"
+          id="codigo"
+          placeholder="Ex: SMASH-AB12"
+          maxlength="20"
+          autofocus
+          required
+        />
+        <button type="submit" id="btnVerificar">
+          <span class="spinner hidden" id="spinner"></span>
+          <span id="btnText">Verificar</span>
+        </button>
+      </div>
+      <small class="hint">Dica: cole o código ou use leitor físico de código/QR como teclado.</small>
+    </form>
+
+    <div id="resultado" class="resultado hidden">
+      <div class="status-pill" id="statusPill">
+        <span id="statusIcon">•</span>
+        <span id="statusCupom">—</span>
+      </div>
+
+      <div class="grid">
+        <p><strong>Cliente:</strong> <span id="nomeCliente">—</span></p>
+        <p><strong>Brinde:</strong> <span id="brindeCupom">—</span></p>
+        <p><strong>Validade:</strong> <span id="validadeCupom">—</span></p>
+        <p class="linha-uso hidden" id="linhaUso"><strong>Utilizado em:</strong> <span id="dataUso">—</span></p>
+      </div>
+
+      <button id="btnBaixar" class="btn-baixar hidden">Dar baixa no cupom</button>
+    </div>
+  </div>
+
+  <script src="script.js?v=1.0"></script>
+</body>
+</html>

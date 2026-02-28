@@ -1,0 +1,153 @@
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f97316;
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  color: #fff;
+}
+
+.container {
+  max-width: 520px;
+  width: 100%;
+  margin: 20px;
+  padding: 30px;
+  background: #fff;
+  color: #000;
+  border-radius: 16px;
+  box-shadow: 0 0 25px rgba(255,138,61,0.3);
+  text-align: center;
+}
+
+.logo {
+  max-width: 150px;
+  width: 100%;
+  height: auto;
+  margin-bottom: 16px;
+}
+
+.emoji {
+  font-size: 44px;
+  margin-bottom: 8px;
+}
+
+h1 {
+  margin: 6px 0 8px;
+  color: #ff8a3d;
+  font-size: 22px;
+  font-weight: 800;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.15);
+}
+
+.soda-photo {
+  width: 100%;
+  max-height: 240px;
+  object-fit: cover;
+  border-radius: 14px;
+  box-shadow: 0 10px 24px rgba(0,0,0,.15);
+  margin: 10px 0 14px;
+  mask-image: linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%);
+}
+
+.brinde {
+  font-size: 18px;
+  margin: 8px 0;
+  font-weight: 600;
+}
+
+.brinde strong {
+  color: #d32f2f;
+}
+
+.validade {
+  color: #000;
+  font-weight: 600;
+  margin: 8px 0 10px;
+  font-size: 15px;
+  line-height: 1.4;
+}
+
+.validade .frase-principal {
+  display: block;
+  font-size: 20px;
+  font-weight: 800;
+  color: #ff8a3d;
+  margin-bottom: 4px;
+}
+
+.validade span {
+  color: #22c55e;
+}
+
+.codigo {
+  font-size: 18px;
+  font-weight: 700;
+  color: #0d47a1;
+  margin: 8px 0 12px;
+  word-break: break-word;
+}
+
+.qr-wrap {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  border: 2px dashed #ff8a3d;
+  border-radius: 16px;
+  padding: 22px;
+  background: #fff7ed; /* leve fundo quente */
+}
+
+#qrcode {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 14px;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+}
+
+#qrcode canvas,
+#qrcode img {
+  display: block;
+  margin: 0 auto;
+}
+
+.btns {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+button {
+  appearance: none;
+  border: none;
+  cursor: pointer;
+  padding: 12px 18px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 15px;
+  color: #fff;
+  background: linear-gradient(135deg, #ff8a3d, #f97316);
+  box-shadow: 0 6px 18px rgba(255,138,61,0.35);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 22px rgba(255,138,61,0.45);
+}
+
+.hint {
+  font-size: 15px;
+  font-weight: 600;
+  color: #374151;
+  margin-top: 6px;
+}

@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <title>Obrigado!</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <link rel="stylesheet" href="obrigado.css" />
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+</head>
+
+<body>
+  <div class="container">
+    <img src="logo.png" class="logo" alt="Logo Smash do Cabo" />
+
+    <h1>Obrigado por responder nossa pesquisa 🎉</h1>
+
+    <p class="brinde">
+      <strong>Você ganhou:</strong> 1 Soda Italiana
+    </p>
+
+    <p class="validade">
+      Válido até: <span id="validade">--/--/----</span>
+    </p>
+
+    <p id="codigoCupom" class="codigo">Gerando código...</p>
+
+    <div class="qr-wrap">
+      <div id="qrcode"></div>
+
+      <button id="btnCopy">Copiar código</button>
+
+      <p class="hint">
+  📸 <strong style="color:#f97316;">Tire um print dessa tela</strong> e apresente na loja
+</p>
+    </div>
+  </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+
+  if (!localStorage.getItem('cliente_telefone')) {
+    window.location.href = 'index.html';
+    return;
+  }
+
+  const SUPABASE_URL = 'https://leezpmpmqkiocvvpcwqa.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxlZXpwbXBtcWtpb2N2dnBjd3FhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE5NTI2NTUsImV4cCI6MjA4NzUyODY1NX0.M-TpjLCmwA6jyUFXG33o-L8O_1o84Ap4GM9vtxAa4KQ';
+
+  const BRINDE = '1 Soda Italiana';
+
+  const nome = localStorage.getItem('cliente_nome') || 'Cliente';
+  const telefone = localStorage.getItem('cliente_telefone').trim();
+  const hojeISO = new Date().toISOString().split('T')[0];
+
+  const headers = {
+    apikey: SUPABASE_ANON_KEY,
+    Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+    'Content-Type': 'application/json'
+  };
+
+  function gerarCodigo() {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let code = '';
+    for (let i = 0; i < 4; i++) {
+      code += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return 'SMASH-' + code;
+  }
+
+  async function buscarCupom() {
+    const url = `${SUPABASE_URL}/rest/v1/cupons?cliente_telefone=eq.${telefone}&usado=is.false&valido_ate=gte.${hojeISO}`;
+    const res = await fetch(url, { headers });
+    if (!res.ok) throw new Error('Erro ao buscar cupom');
+    return res.json();
+  }
+
+  async function criarCupom(codigo, validadeISO, link) {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/cupons`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({
+        codigo,
+        cliente_nome: nome,
+        cliente_telefone: telefone,
+        brinde: BRINDE,
+        valido_ate: validadeISO,
+        usado: false,
+        link_verificacao: link
+      })
+    });
+
+    if (!res.ok) {
+      const err = await res.text();
+      throw new Error(err);
+    }
+  }
+
+  function renderizar(codigo, validadeISO, link) {
+    document.getElementById('validade').textContent =
+      new Date(validadeISO).toLocaleDateString('pt-BR');
+
+    document.getElementById('codigoCupom').textContent = codigo;
+
+    const qr = document.getElementById('qrcode');
+    qr.innerHTML = '';
+
+    new QRCode(qr, {
+      text: link,
+      width: 160,
+      height: 160
+    });
+
+    document.getElementById('btnCopy').onclick = async () => {
+      await navigator.clipboard.writeText(codigo);
+      alert('Código copiado!');
+    };
+  }
+
+  try {
+
+    const lista = await buscarCupom();
+
+    if (lista.length > 0) {
+      const c = lista[0];
+      const link = c.link_verificacao ||
+        `https://verificacupom.smashdocabo.com/?codigo=${c.codigo}`;
+      renderizar(c.codigo, c.valido_ate, link);
+    } else {
+      const codigo = gerarCodigo();
+
+      const validade = new Date();
+      validade.setDate(validade.getDate() + 30);
+      const validadeISO = validade.toISOString().split('T')[0];
+
+      const link = `https://verificacupom.smashdocabo.com/?codigo=${codigo}`;
+
+      await criarCupom(codigo, validadeISO, link);
+      renderizar(codigo, validadeISO, link);
+    }
+
+  } catch (erro) {
+    console.error('Erro:', erro);
+    alert('Erro ao gerar cupom.');
+  }
+
+});
+</script>
+
+</body>
+</html>
