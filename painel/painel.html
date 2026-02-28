@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Painel Smash do Cabo</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      display: flex;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f4f6fa;
+    }
+    .content {
+      flex: 1;
+      padding: 30px;
+    }
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .card-panel {
+      border-left: 5px solid #ccc;
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    }
+    .card-panel.nps        { border-color: #16a34a; }
+    .card-panel.promotores { border-color: #22c55e; }
+    .card-panel.neutros    { border-color: #facc15; }
+    .card-panel.detratores { border-color: #dc2626; }
+    .card-panel.respostas  { border-color: #3b82f6; }
+  </style>
+</head>
+<body>
+  <div id="menuLateral"></div>
+
+  <div class="content">
+    <div class="topbar">
+      <h3>Painel Smash do Cabo</h3>
+      <div>
+        <span>Olá, <strong>Jeniffer Adm</strong></span>
+        <button onclick="logout()" class="btn btn-danger btn-sm ms-3">Sair</button>
+      </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+      <div class="col-md-2">
+        <div class="card-panel nps">
+          <div><strong>NPS</strong></div>
+          <div id="npsGeral">-</div>
+        </div>
+      </div>
+      <div class="col-md-2">
+        <div class="card-panel promotores">
+          <div><strong>Promotores</strong></div>
+          <div id="npsPromotores">-</div>
+        </div>
+      </div>
+      <div class="col-md-2">
+        <div class="card-panel neutros">
+          <div><strong>Neutros</strong></div>
+          <div id="npsNeutros">-</div>
+        </div>
+      </div>
+      <div class="col-md-2">
+        <div class="card-panel detratores">
+          <div><strong>Detratores</strong></div>
+          <div id="npsDetratores">-</div>
+        </div>
+      </div>
+      <div class="col-md-2">
+        <div class="card-panel respostas">
+          <div><strong>Respostas</strong></div>
+          <div id="totalRespostas">-</div>
+        </div>
+      </div>
+    </div>
+
+    <h5>Últimas Respostas</h5>
+    <table class="table table-bordered">
+      <thead class="table-light">
+        <tr>
+          <th>Data</th>
+          <th>Nome</th>
+          <th>Sugestão</th>
+          <th>Morador</th>
+          <th>Qualidade</th>
+          <th>Tempo</th>
+          <th>Variedade</th>
+          <th>Custo-benefício</th>
+        </tr>
+      </thead>
+      <tbody id="ultimasRespostas"></tbody>
+    </table>
+  </div>
+
+  <script>
+    // Carrega o layout lateral
+    fetch("layout.html")
+      .then(res => res.text())
+      .then(html => {
+        document.getElementById("menuLateral").innerHTML = html;
+      });
+
+    const SUPABASE_URL = 'https://kwktdbinfadztnkghuul.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt3a3RkYmluZmFkenRua2dodXVsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc5NzI5NjAsImV4cCI6MjA2MzU0ODk2MH0.jN-ggFrIE1x_4kO8KE5G_bZq6V1yFT1El64oQ_ELubY';
+
+    async function carregarPainel() {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/feedback_detalhado?select=*`, {
+        headers: {
+          apikey: SUPABASE_ANON_KEY,
+          Authorization: `Bearer ${SUPABASE_ANON_KEY}`
+        }
+      });
+
+      const dados = await res.json();
+      const total = dados.length;
+      const promotores = dados.filter(d => d.indicacao >= 9).length;
+      const neutros = dados.filter(d => d.indicacao >= 7 && d.indicacao <= 8).length;
+      const detratores = dados.filter(d => d.indicacao <= 6).length;
+      const nps = ((promotores - detratores) / total) * 100;
+
+      document.getElementById('npsGeral').textContent = nps.toFixed(0);
+      document.getElementById('npsPromotores').textContent = promotores;
+      document.getElementById('npsNeutros').textContent = neutros;
+      document.getElementById('npsDetratores').textContent = detratores;
+      document.getElementById('totalRespostas').textContent = total;
+
+      const ultimas = dados.reverse().slice(0, 20);
+      const tbody = document.getElementById('ultimasRespostas');
+      ultimas.forEach(r => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${new Date(r.created_at).toLocaleDateString()}</td>
+          <td>${r.nome}</td>
+          <td>${r.sugestao || '-'}</td>
+          <td>${r.morador || '-'}</td>
+          <td>${r.qualidade || '-'}</td>
+          <td>${r.tempo || '-'}</td>
+          <td>${r.variedade || '-'}</td>
+          <td>${r.custo_beneficio || '-'}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function logout() {
+      localStorage.removeItem('usuarioLogado');
+      window.location.href = 'index.html';
+    }
+
+    carregarPainel();
+  </script>
+</body>
+</html>

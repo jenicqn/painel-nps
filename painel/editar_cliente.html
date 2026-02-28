@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Editar Cliente</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #f4f6fa;
+      font-family: 'Segoe UI', sans-serif;
+    }
+    .container {
+      max-width: 600px;
+      margin-top: 60px;
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 12px rgba(0,0,0,0.08);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h3>Editar Cliente</h3>
+    <form id="formEditar">
+      <div class="mb-3">
+        <label for="nome" class="form-label">Nome</label>
+        <input type="text" class="form-control" id="nome" required>
+      </div>
+      <div class="mb-3">
+        <label for="email" class="form-label">Email</label>
+        <input type="email" class="form-control" id="email" required>
+      </div>
+      <div class="mb-3">
+        <label for="telefone" class="form-label">Telefone</label>
+        <input type="text" class="form-control" id="telefone" required>
+      </div>
+      <div class="mb-3">
+        <label for="data_nascimento" class="form-label">Aniversário</label>
+        <input type="date" class="form-control" id="data_nascimento" required>
+      </div>
+      <button type="submit" class="btn btn-primary">Salvar</button>
+      <a href="clientes.html" class="btn btn-secondary ms-2">Cancelar</a>
+    </form>
+  </div>
+
+  <script>
+    const SUPABASE_URL = 'https://leezpmpmqkiocvvpcwqa.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxlZXpwbXBtcWtpb2N2dnBjd3FhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE5NTI2NTUsImV4cCI6MjA4NzUyODY1NX0.M-TpjLCmwA6jyUFXG33o-L8O_1o84Ap4GM9vtxAa4KQ';
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const clienteId = urlParams.get('id');
+
+    async function carregarCliente() {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/feedback_detalhado?id=eq.${clienteId}&select=nome,email,telefone,data_nascimento`, {
+        headers: {
+          apikey: SUPABASE_ANON_KEY,
+          Authorization: `Bearer ${SUPABASE_ANON_KEY}`
+        }
+      });
+      const dados = await res.json();
+      const cliente = dados[0];
+
+      document.getElementById('nome').value = cliente.nome || '';
+      document.getElementById('email').value = cliente.email || '';
+      document.getElementById('telefone').value = cliente.telefone || '';
+      document.getElementById('data_nascimento').value = cliente.data_nascimento || '';
+    }
+
+    document.getElementById('formEditar').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const nome = document.getElementById('nome').value;
+      const email = document.getElementById('email').value;
+      const telefone = document.getElementById('telefone').value;
+      const data_nascimento = document.getElementById('data_nascimento').value;
+
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/feedback_detalhado?id=eq.${clienteId}`, {
+        method: 'PATCH',
+        headers: {
+          apikey: SUPABASE_ANON_KEY,
+          Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ nome, email, telefone, data_nascimento })
+      });
+
+      if (res.ok) {
+        alert('Cliente atualizado com sucesso!');
+        window.location.href = 'clientes.html';
+      } else {
+        const erro = await res.json();
+        console.error('Erro ao salvar:', erro);
+        alert('Erro ao salvar cliente.');
+      }
+    });
+
+    carregarCliente();
+  </script>
+</body>
+</html>

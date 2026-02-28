@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <title>Pesquisa Smash do Cabo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f97316;
+      margin: 0;
+      padding: 40px 20px;
+      color: #000;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .container {
+      background-color: #fff;
+      padding: 30px;
+      border-radius: 16px;
+      max-width: 700px;
+      width: 100%;
+      box-shadow: 0 12px 24px rgba(0,0,0,0.15);
+    }
+    .logo {
+      width: 160px;
+      display: block;
+      margin: 0 auto 20px;
+    }
+    label {
+      display: block;
+      margin: 15px 0 5px;
+      font-weight: bold;
+    }
+    .linha {
+      margin-bottom: 20px;
+    }
+    select, input[type="text"], input[type="email"], textarea {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+    button[type="submit"] {
+      padding: 12px 24px;
+      font-size: 16px;
+      background-color: #000;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    /* Estrelas alinhadas à esquerda */
+    .estrelas {
+      display: flex;
+      flex-direction: row;
+      gap: 5px;
+    }
+    .estrelas input {
+      display: none;
+    }
+    .estrelas label {
+      font-size: 2em;
+      color: #ccc;
+      cursor: pointer;
+      transition: color 0.2s;
+      position: relative;
+    }
+    /* Pinta só a estrela selecionada */
+    .estrelas input:checked + label {
+      color: gold;
+    }
+    /* Remove efeito hover */
+    .estrelas label:hover,
+    .estrelas label:hover ~ label {
+      color: inherit;
+    }
+    /* Botões de indicação */
+    .indicacao-botoes {
+      display: flex;
+      gap: 6px;
+      margin-top: 6px;
+    }
+    .indicacao-botoes button {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background-color: white;
+      border: 2px solid gray;
+      font-weight: bold;
+      cursor: pointer;
+      user-select: none;
+      transition: background-color 0.3s, border-color 0.3s;
+    }
+    .indicacao-botoes button.vermelho {
+      border-color: #dc3545;
+      color: #dc3545;
+    }
+    .indicacao-botoes button.amarelo {
+      border-color: #ffc107;
+      color: #856404;
+    }
+    .indicacao-botoes button.verde {
+      border-color: #198754;
+      color: #198754;
+    }
+    .indicacao-botoes button.selecionado.vermelho {
+  background-color: #dc3545;
+  color: white;
+}
+
+.indicacao-botoes button.selecionado.amarelo {
+  background-color: #ffc107;
+  color: #000;
+}
+
+.indicacao-botoes button.selecionado.verde {
+  background-color: #198754;
+  color: white;
+}
+
+  </style>
+</head>
+<body>
+  <div class="container">
+    <img src="https://jenicqn.github.io/smashdocabo/logo.png" alt="Logo Smash do Cabo" class="logo" />
+    <h1>Pesquisa de Satisfação - Smash do Cabo</h1>
+
+    <form id="formularioPesquisa">
+      <div class="linha"><label>Nome *</label><input type="text" name="nome" required /></div>
+      <div class="linha"><label>Telefone *</label><input type="text" name="telefone" required /></div>
+      <div class="linha"><label>Email *</label><input type="email" name="email" required /></div>
+
+      <div class="linha">
+        <label>Data de nascimento</label>
+        <input
+          type="text"
+          id="data_nascimento"
+          name="data_nascimento"
+          placeholder="dd/mm/aaaa"
+          maxlength="10"
+          pattern="\d{2}/\d{2}/\d{4}"
+        />
+      </div>
+
+      <div class="linha">
+        <label>Você é morador da cidade? *</label>
+        <input type="radio" name="morador" value="Sim, sou morador" required /> Sim
+        <input type="radio" name="morador" value="Não, sou turista" required /> Não
+      </div>
+
+      <div class="linha"><label>Como você avalia o nosso ATENDIMENTO? *</label>
+        <div class="estrelas">
+          <input type="radio" id="att1" name="atendimento" value="1" required />
+          <label for="att1">★</label>
+          <input type="radio" id="att2" name="atendimento" value="2" />
+          <label for="att2">★</label>
+          <input type="radio" id="att3" name="atendimento" value="3" />
+          <label for="att3">★</label>
+          <input type="radio" id="att4" name="atendimento" value="4" />
+          <label for="att4">★</label>
+          <input type="radio" id="att5" name="atendimento" value="5" />
+          <label for="att5">★</label>
+        </div>
+      </div>
+
+      <div class="linha"><label>Qualidade dos produtos *</label>
+        <div class="estrelas">
+          <input type="radio" id="qual1" name="qualidade" value="1" required />
+          <label for="qual1">★</label>
+          <input type="radio" id="qual2" name="qualidade" value="2" />
+          <label for="qual2">★</label>
+          <input type="radio" id="qual3" name="qualidade" value="3" />
+          <label for="qual3">★</label>
+          <input type="radio" id="qual4" name="qualidade" value="4" />
+          <label for="qual4">★</label>
+          <input type="radio" id="qual5" name="qualidade" value="5" />
+          <label for="qual5">★</label>
+        </div>
+      </div>
+
+      <div class="linha"><label>Tempo de espera *</label>
+        <div class="estrelas">
+          <input type="radio" id="tempo1" name="tempo" value="1" required />
+          <label for="tempo1">★</label>
+          <input type="radio" id="tempo2" name="tempo" value="2" />
+          <label for="tempo2">★</label>
+          <input type="radio" id="tempo3" name="tempo" value="3" />
+          <label for="tempo3">★</label>
+          <input type="radio" id="tempo4" name="tempo" value="4" />
+          <label for="tempo4">★</label>
+          <input type="radio" id="tempo5" name="tempo" value="5" />
+          <label for="tempo5">★</label>
+        </div>
+      </div>
+
+      <div class="linha"><label>Variedade de produtos *</label>
+        <div class="estrelas">
+          <input type="radio" id="var1" name="variedade" value="1" required />
+          <label for="var1">★</label>
+          <input type="radio" id="var2" name="variedade" value="2" />
+          <label for="var2">★</label>
+          <input type="radio" id="var3" name="variedade" value="3" />
+          <label for="var3">★</label>
+          <input type="radio" id="var4" name="variedade" value="4" />
+          <label for="var4">★</label>
+          <input type="radio" id="var5" name="variedade" value="5" />
+          <label for="var5">★</label>
+        </div>
+      </div>
+
+      <div class="linha"><label>Custo-benefício *</label>
+        <div class="estrelas">
+          <input type="radio" id="cb1" name="custobeneficio" value="1" required />
+          <label for="cb1">★</label>
+          <input type="radio" id="cb2" name="custobeneficio" value="2" />
+          <label for="cb2">★</label>
+          <input type="radio" id="cb3" name="custobeneficio" value="3" />
+          <label for="cb3">★</label>
+          <input type="radio" id="cb4" name="custobeneficio" value="4" />
+          <label for="cb4">★</label>
+          <input type="radio" id="cb5" name="custobeneficio" value="5" />
+          <label for="cb5">★</label>
+        </div>
+      </div>
+
+      <div class="linha"><label>Como chegou até a loja? *</label>
+        <select name="origem" required>
+          <option value="">Selecione</option>
+          <option value="Google">Google</option>
+          <option value="Instagram">Instagram</option>
+          <option value="TikTok">TikTok</option>
+          <option value="Influencer">Influencer</option>
+          <option value="Passando em frente">Passando em frente</option>
+          <option value="Outros">Outros</option>
+        </select>
+      </div>
+
+      <div class="linha"><label>O que falta no Smash do Cabo?</label><input type="text" name="falta" /></div>
+
+      <div class="linha">
+        <label>Indicação para amigos (0 a 10) *</label>
+        <div class="indicacao-botoes" id="indicacaoBotoes"></div>
+        <input type="hidden" name="indicacao" id="inputIndicacao" required />
+      </div>
+
+      <div class="linha"><label>Sugestão ou elogio</label><textarea name="sugestao" rows="3"></textarea></div>
+
+      <button type="submit">Enviar</button>
+    </form>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const inputDataNascimento = document.getElementById('data_nascimento');
+
+      inputDataNascimento.addEventListener('input', function(e) {
+        let value = e.target.value;
+
+        // Remove tudo que não for número
+        value = value.replace(/\D/g, '');
+
+        // Aplica a máscara dd/mm/aaaa
+        if (value.length > 2 && value.length <= 4) {
+          value = value.slice(0, 2) + '/' + value.slice(2);
+        } else if (value.length > 4) {
+          value = value.slice(0, 2) + '/' + value.slice(2, 4) + '/' + value.slice(4, 8);
+        }
+
+        e.target.value = value;
+      });
+    });
+
+    // Função para gerar os botões 0 a 10 para indicação
+    const containerIndicacao = document.getElementById('indicacaoBotoes');
+    const inputIndicacao = document.getElementById('inputIndicacao');
+
+    function criarBotaoIndicacao(valor) {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.textContent = valor;
+
+      if (valor <= 4) {
+        btn.classList.add('vermelho');
+      } else if (valor <= 7) {
+        btn.classList.add('amarelo');
+      } else {
+        btn.classList.add('verde');
+      }
+
+      btn.addEventListener('click', () => {
+        // Remove seleção anterior
+        containerIndicacao.querySelectorAll('button').forEach(b => b.classList.remove('selecionado'));
+        // Marca o selecionado
+        btn.classList.add('selecionado');
+        // Atualiza o input escondido
+        inputIndicacao.value = valor;
+      });
+
+      return btn;
+    }
+
+    // Gera os botões 0 a 10
+    for (let i = 0; i <= 10; i++) {
+      containerIndicacao.appendChild(criarBotaoIndicacao(i));
+    }
+
+    // Código do seu formulário: envio, etc
+    const SUPABASE_URL = 'https://kwktdbinfadztnkghuul.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt3a3RkYmluZmFkenRua2dodXVsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc5NzI5NjAsImV4cCI6MjA2MzU0ODk2MH0.jN-ggFrIE1x_4kO8KE5G_bZq6V1yFT1El64oQ_ELubY';
+
+    document.getElementById('formularioPesquisa').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const form = e.target;
+      const data = Object.fromEntries(new FormData(form));
+
+      const response = await fetch(`${SUPABASE_URL}/rest/v1/feedback_detalhado`, {
+        method: 'POST',
+        headers: {
+          'apikey': SUPABASE_KEY,
+          'Authorization': `Bearer ${SUPABASE_KEY}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          ...data,
+          atendimento: parseInt(data.atendimento),
+          qualidade: parseInt(data.qualidade),
+          tempo: parseInt(data.tempo),
+          variedade: parseInt(data.variedade),
+          custobeneficio: parseInt(data.custobeneficio),
+          indicacao: parseInt(data.indicacao),
+          data_nascimento: data.data_nascimento || null
+        })
+      });
+
+      if (response.ok) {
+        // Salva dados do cliente para o cupom
+        localStorage.setItem('cliente_nome', data.nome);
+        localStorage.setItem('cliente_email', data.email);
+        localStorage.setItem('cliente_telefone', data.telefone);
+
+        // Redireciona para a tela de brinde
+        window.location.href = "https://jenicqn.github.io/smashdocabo/obrigado.html";
+      } else {
+        alert("Erro ao enviar. Tente novamente.");
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Nova Pesquisa</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #f4f6fa;
+      font-family: 'Segoe UI', sans-serif;
+    }
+    .container {
+      max-width: 600px;
+      margin-top: 60px;
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 12px rgba(0,0,0,0.08);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h3>Criar Nova Pesquisa</h3>
+    <form id="formPesquisa">
+      <div class="mb-3">
+        <label for="nome" class="form-label">Nome da Pesquisa</label>
+        <input type="text" class="form-control" id="nome" required>
+      </div>
+      <div class="mb-3">
+        <label for="unidade" class="form-label">Unidade</label>
+        <input type="text" class="form-control" id="unidade" value="Smash do Cabo" required>
+      </div>
+      <div class="mb-3">
+        <label for="status" class="form-label">Status</label>
+        <select class="form-control" id="status" required>
+          <option value="Ativo">Ativo</option>
+          <option value="Inativo" selected>Inativo</option>
+        </select>
+      </div>
+      <div class="mb-3">
+        <label for="pagina_ativa" class="form-label">Página</label>
+        <select class="form-control" id="pagina_ativa" required>
+          <option value="Ativo">Ativa</option>
+          <option value="Inativo" selected>Inativa</option>
+        </select>
+      </div>
+      <div class="mb-3">
+        <label for="linktree" class="form-label">Linktree</label>
+        <select class="form-control" id="linktree" required>
+          <option value="Ativo">Ativo</option>
+          <option value="Inativo" selected>Inativo</option>
+        </select>
+      </div>
+      <button type="submit" class="btn btn-primary">Salvar</button>
+      <a href="pesquisas.html" class="btn btn-secondary ms-2">Cancelar</a>
+    </form>
+  </div>
+
+  <script>
+    const SUPABASE_URL = 'https://kwktdbinfadztnkghuul.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt3a3RkYmluZmFkenRua2dodXVsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc5NzI5NjAsImV4cCI6MjA2MzU0ODk2MH0.jN-ggFrIE1x_4kO8KE5G_bZq6V1yFT1El64oQ_ELubY';
+
+    document.getElementById('formPesquisa').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const nome = document.getElementById('nome').value;
+      const unidade = document.getElementById('unidade').value;
+      const status = document.getElementById('status').value;
+      const pagina_ativa = document.getElementById('pagina_ativa').value;
+      const linktree = document.getElementById('linktree').value;
+
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/pesquisas`, {
+        method: 'POST',
+        headers: {
+          apikey: SUPABASE_ANON_KEY,
+          Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ nome, unidade, status, pagina_ativa, linktree })
+      });
+
+      if (res.ok) {
+        alert('Pesquisa criada com sucesso!');
+        window.location.href = 'pesquisas.html';
+      } else {
+        const erro = await res.json();
+        console.error('Erro ao criar pesquisa:', erro);
+        alert('Erro ao criar pesquisa.');
+      }
+    });
+  </script>
+</body>
+</html>
+

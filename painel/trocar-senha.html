@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Trocar Senha</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+  <div class="container mt-5">
+    <h3 class="mb-4">Trocar Senha</h3>
+    <form id="formSenha">
+      <div class="mb-3">
+        <label for="novaSenha" class="form-label">Nova Senha</label>
+        <input type="password" class="form-control" id="novaSenha" required minlength="6">
+      </div>
+      <div class="mb-3">
+        <label for="confirmarSenha" class="form-label">Confirmar Nova Senha</label>
+        <input type="password" class="form-control" id="confirmarSenha" required>
+      </div>
+      <div class="alert alert-danger d-none" id="erro"></div>
+      <div class="alert alert-success d-none" id="sucesso"></div>
+      <button type="submit" class="btn btn-success">Atualizar Senha</button>
+      <a href="usuarios.html" class="btn btn-secondary ms-2">Cancelar</a>
+      <a href="index.html" class="btn btn-outline-primary ms-2">Ir para o Login</a>
+      </form>
+  </div>
+
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const usuarioId = urlParams.get('id');
+
+    const erro = document.getElementById('erro');
+    const sucesso = document.getElementById('sucesso');
+
+    document.getElementById('formSenha').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      erro.classList.add('d-none');
+      sucesso.classList.add('d-none');
+
+      const senha = document.getElementById('novaSenha').value;
+      const confirmar = document.getElementById('confirmarSenha').value;
+
+      if (!senha || senha.length < 6) {
+        erro.textContent = 'A senha deve ter pelo menos 6 caracteres.';
+        erro.classList.remove('d-none');
+        return;
+      }
+
+      if (senha !== confirmar) {
+        erro.textContent = 'As senhas não coincidem.';
+        erro.classList.remove('d-none');
+        return;
+      }
+
+      try {
+        const resposta = await fetch('https://supabase-user-api-painel.vercel.app/api/atualizar-senha', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ id: usuarioId, senha })
+        });
+
+        const retorno = await resposta.json();
+
+        if (!resposta.ok) {
+          throw new Error(retorno.error || 'Erro ao atualizar senha');
+        }
+
+        sucesso.textContent = 'Senha atualizada com sucesso!';
+        sucesso.classList.remove('d-none');
+      } catch (err) {
+        erro.textContent = err.message;
+        erro.classList.remove('d-none');
+      }
+    });
+  </script>
+</body>
+</html>

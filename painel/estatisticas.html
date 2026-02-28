@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Estatísticas - Smash do Cabo</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="layout.css">
+<link rel="stylesheet" href="estatisticas.css">
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/wordcloud2.js/1.2.2/wordcloud2.min.js"></script>
+</head>
+
+<body>
+
+<div id="sidebar-container"></div>
+
+<div class="conteudo">
+
+  <div class="topbar mb-4">
+    <h3>Estatísticas</h3>
+  </div>
+
+  <!-- FILTRO -->
+  <div class="card p-3 mb-4">
+    <div class="row g-2">
+      <div class="col-md-3">
+        <input type="date" id="dataInicio" class="form-control">
+      </div>
+      <div class="col-md-3">
+        <input type="date" id="dataFim" class="form-control">
+      </div>
+      <div class="col-md-2">
+        <button id="btnAplicar" class="btn btn-primary w-100">Aplicar</button>
+      </div>
+      <div class="col-md-2">
+        <button id="btnMesAtual" class="btn btn-outline-secondary w-100">Mês Atual</button>
+      </div>
+      <div class="col-md-2">
+        <button id="btn30Dias" class="btn btn-outline-secondary w-100">Últimos 30 dias</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- KPIs -->
+  <div class="row g-3 mb-4">
+
+    <div class="col-md-3">
+      <div class="kpi-card">
+        <div class="kpi-title">NPS Médio</div>
+        <div id="kpiNPS" class="kpi-value">-</div>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="kpi-card">
+        <div class="kpi-title">Total Respostas</div>
+        <div id="kpiTotal" class="kpi-value">-</div>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="kpi-card">
+        <div class="kpi-title">% Moradores</div>
+        <div id="kpiMoradores" class="kpi-value">-</div>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="kpi-card">
+        <div class="kpi-title">Média Qualidade</div>
+        <div id="kpiQualidade" class="kpi-value">-</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- NUVEM DE PALAVRAS -->
+  <div class="card p-4 mb-4">
+    <h6>Palavras Mais Citadas</h6>
+    <div id="wordCloud" style="width:100%; height:300px;"></div>
+  </div>
+
+  <!-- GRÁFICOS -->
+  <div class="row g-4">
+
+    <div class="col-md-12">
+      <div class="card p-4">
+        <h6>Evolução NPS no Tempo</h6>
+        <canvas id="graficoEvolucao"></canvas>
+      </div>
+    </div>
+
+    <div class="col-md-6">
+      <div class="card p-4">
+        <h6>Distribuição NPS</h6>
+        <canvas id="graficoDistribuicao"></canvas>
+      </div>
+    </div>
+
+    <div class="col-md-6">
+      <div class="card p-4">
+        <h6>Morador vs Turista</h6>
+        <canvas id="graficoSegmento"></canvas>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<script src="config.js"></script>
+<script src="sidebar.js"></script>
+<script src="estatisticas.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Obrigado!</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f97316;
+      margin: 0;
+      padding: 0;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      height: 100vh;
+      color: #fff;
+    }
+    .container {
+      max-width: 500px;
+      margin: auto;
+      padding: 20px;
+      border-radius: 16px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.2);
+      background-color: #fff;
+      color: #000;
+    }
+    .logo {
+      width: 140px;
+      margin-bottom: 20px;
+    }
+    h1 {
+      color: #000;
+      margin-bottom: 10px;
+    }
+    .brinde {
+      font-size: 18px;
+      margin: 10px 0;
+      color: #000;
+    }
+    .brinde strong {
+      color: #d32f2f;
+    }
+    .validade {
+      color: #22c55e;
+      font-weight: bold;
+      margin-bottom: 10px;
+      font-size: 16px;
+    }
+    .codigo {
+      font-size: 18px;
+      font-weight: bold;
+      color: #0d47a1;
+      margin-bottom: 10px;
+    }
+    .nota {
+      font-size: 14px;
+      color: #333;
+    }
+    .emoji {
+      font-size: 48px;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <img src="https://jenicqn.github.io/smashdocabo/logo.png" alt="Logo Smash do Cabo" class="logo" />
+    <div class="emoji">🎉</div>
+    <h1>Obrigado por responder nossa pesquisa!</h1>
+    <p class="brinde">
+      🎁 Você ganhou:<br /><strong>1 Soda Italiana</strong>
+    </p>
+    <p class="validade">Válido até: <span id="validade"></span></p>
+    <p class="codigo" id="codigoCupom">Gerando seu código...</p>
+    <p class="nota">Apresente um print dessa tela na loja Smash do Cabo.</p>
+  </div>
+
+  <script>
+    const SUPABASE_URL = 'https://kwktdbinfadztnkghuul.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt3a3RkYmluZmFkenRua2dodXVsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc5NzI5NjAsImV4cCI6MjA2MzU0ODk2MH0.jN-ggFrIE1x_4kO8KE5G_bZq6V1yFT1El64oQ_ELubY';
+
+    const brinde = "1 Soda Italiana";
+
+    function gerarCodigoAleatorio() {
+      const letras = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+      let aleatorio = '';
+      for (let i = 0; i < 4; i++) {
+        aleatorio += letras.charAt(Math.floor(Math.random() * letras.length));
+      }
+      return 'SMASH-' + aleatorio;
+    }
+
+    async function gerarOuBuscarCupom() {
+      const nome = localStorage.getItem('cliente_nome') || 'Cliente';
+      const email = localStorage.getItem('cliente_email') || '';
+      const telefone = localStorage.getItem('cliente_telefone') || '';
+
+      // Buscar cupom existente válido e não utilizado
+      const hoje = new Date().toISOString().split('T')[0];
+      const resposta = await fetch(`${SUPABASE_URL}/rest/v1/cupons?cliente_telefone=eq.${telefone}&utilizado=eq.false&valido_ate=gte.${hoje}`, {
+        headers: {
+          'apikey': SUPABASE_ANON_KEY,
+          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+        }
+      });
+
+      const dados = await resposta.json();
+
+      if (dados.length > 0) {
+        // Cupom existente encontrado
+        const cupom = dados[0];
+        document.getElementById("validade").textContent = new Date(cupom.valido_ate).toLocaleDateString('pt-BR');
+        document.getElementById('codigoCupom').textContent = `Código do Cupom: ${cupom.codigo}`;
+      } else {
+        // Não tem cupom, cria novo
+        const codigo = gerarCodigoAleatorio();
+        const validade = new Date();
+        validade.setDate(validade.getDate() + 30);
+
+        document.getElementById("validade").textContent = validade.toLocaleDateString('pt-BR');
+        document.getElementById('codigoCupom').textContent = `Código do Cupom: ${codigo}`;
+
+        await fetch(`${SUPABASE_URL}/rest/v1/cupons`, {
+          method: 'POST',
+          headers: {
+            'apikey': SUPABASE_ANON_KEY,
+            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            codigo,
+            cliente_nome: nome,
+            cliente_email: email,
+            cliente_telefone: telefone,
+            brinde,
+            valido_ate: validade.toISOString().split('T')[0],
+            utilizado: false
+          })
+        });
+      }
+    }
+
+    gerarOuBuscarCupom();
+  </script>
+</body>
+</html>
