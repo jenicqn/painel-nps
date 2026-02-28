@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Relatórios - Smash do Cabo</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@1.35.6/dist/umd/supabase.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+  <style>
+    body { margin: 0; background-color: #f4f6fa; font-family: Arial, sans-serif; }
+    .layout { display: flex; }
+    .sidebar {
+      width: 220px;
+      background-color: #0f172a;
+      color: white;
+      min-height: 100vh;
+    }
+    .sidebar h4 {
+      padding: 20px;
+      margin: 0;
+      font-size: 20px;
+      font-weight: bold;
+      border-bottom: 1px solid #1e2a47;
+    }
+    .sidebar a {
+      display: block;
+      padding: 15px 20px;
+      color: white;
+      text-decoration: none;
+    }
+    .sidebar a:hover,
+    .sidebar a.active {
+      background-color: #1e2a47;
+    }
+    .content { flex: 1; padding: 30px; }
+    table { width: 100%; font-size: 14px; }
+    th, td { padding: 6px; border-bottom: 1px solid #ddd; }
+    .btn { background-color: #f97316; color: white; border: none; }
+  </style>
+</head>
+<body>
+<div class="layout">
+  <div class="sidebar">
+    <h4>Painel</h4>
+    <a href="cupons.html">Cupons</a>
+    <a href="clientes.html">Clientes</a>
+    <a href="painel.html">Início</a>
+    <a href="pesquisas.html">Pesquisas</a>
+    <a href="respostas.html">Respostas</a>
+    <a href="relatorios.html" class="active">Relatórios</a>
+    <a href="usuarios.html">Usuários</a>
+  </div>
+  <div class="content">
+    <div class="d-flex justify-content-between align-items-center flex-wrap">
+      <h1 id="data-hoje" class="mb-3">Relatório</h1>
+      <div class="d-flex gap-2">
+        <input type="date" id="filtro-data" class="form-control form-control-sm">
+        <select id="tipo-periodo" class="form-select form-select-sm">
+          <option value="dia">Diário</option>
+          <option value="semana">Semanal</option>
+          <option value="mes">Mensal</option>
+        </select>
+        <button class="btn btn-sm" onclick="exportarPDF()">PDF</button>
+        <button class="btn btn-sm" onclick="exportarExcel()">Excel</button>
+      </div>
+    </div>
+
+    <div class="bg-white p-3 rounded shadow-sm mt-3">
+      <h5>Respostas</h5>
+      <div id="bloco-respostas"></div>
+    </div>
+
+    <div class="bg-white p-3 rounded shadow-sm mt-4">
+      <h5>Aniversariantes</h5>
+      <div id="bloco-aniversariantes"></div>
+      <table class="table table-striped mt-2" id="tabela-aniversariantes"></table>
+    </div>
+
+    <div class="bg-white p-3 rounded shadow-sm mt-4">
+      <h5>Cupons Vencendo</h5>
+      <div id="bloco-cupons"></div>
+      <table class="table table-striped mt-2" id="tabela-cupons"></table>
+    </div>
+  </div>
+</div>
+
+<script>
+  const supabaseClient = supabase.createClient(
+    'https://kwktdbinfadztnkghuul.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt3a3RkYmluZmFkenRua2dodXVsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc5NzI5NjAsImV4cCI6MjA2MzU0ODk2MH0.jN-ggFrIE1x_4kO8KE5G_bZq6V1yFT1El64oQ_ELubY'
+  );
+
+  const inputData = document.getElementById('filtro-data');
+  const tipoPeriodo = document.getElementById('tipo-periodo');
+  inputData.value = new Date().toISOString().split('T')[0];
+
+  inputData.addEventListener('change', carregarTudo);
+  tipoPeriodo.addEventListener('change', carregarTudo);
+
+  async function carregarTudo() {
+    const dataBase = new Date(inputData.value);
+    const tipo = tipoPeriodo.value;
+    let inicio = new Date(dataBase);
+    let fim = new Date(dataBase);
+    if (tipo === 'semana') fim.setDate(fim.getDate() + 6);
+    if (tipo === 'mes') fim = new Date(fim.getFullYear(), fim.getMonth() + 1, 0);
+    const dIni = inicio.toISOString().split('T')[0];
+    const dFim = fim.toISOString().split('T')[0];
+    document.getElementById('data-hoje').innerText = `Relatório | ${dIni} a ${dFim}`;
+    await carregarRespostas(dIni, dFim);
+    await carregarAniversariantes(inicio, fim);
+    await carregarCupons(dIni, dFim);
+  }
+
+  async function carregarRespostas(inicio, fim) {
+    const { data } = await supabaseClient.from('respostas').select('*').gte('data_envio', inicio).lte('data_envio', fim);
+    document.getElementById('bloco-respostas').innerHTML = data.length ? `${data.length} resposta(s).` : 'Nenhuma resposta encontrada.';
+  }
+
+  async function carregarAniversariantes(inicio, fim) {
+    const mesDia = [];
+    for (let d = new Date(inicio); d <= fim; d.setDate(d.getDate() + 1)) {
+      mesDia.push(d.toISOString().slice(5, 10));
+    }
+    const { data } = await supabaseClient.from('feedback_detalhado').select('nome,email,telefone,data_nascimento');
+    const filtrados = data.filter(c => mesDia.includes(c.data_nascimento?.slice(5, 10)));
+    document.getElementById('bloco-aniversariantes').innerText = filtrados.length ? `${filtrados.length} aniversariante(s).` : 'Nenhum aniversariante.';
+    const tabela = document.getElementById('tabela-aniversariantes');
+    tabela.innerHTML = filtrados.length ? `<thead><tr><th>Nome</th><th>Email</th><th>Telefone</th><th>Nascimento</th></tr></thead><tbody>` +
+      filtrados.map(c => `<tr><td>${c.nome}</td><td>${c.email}</td><td>${c.telefone}</td><td>${c.data_nascimento}</td></tr>`).join('') + '</tbody>' : '';
+  }
+
+  async function carregarCupons(inicio, fim) {
+    const { data } = await supabaseClient.from('cupons').select('codigo,cliente_nome,valido_ate').gte('valido_ate', inicio).lte('valido_ate', fim);
+    document.getElementById('bloco-cupons').innerText = data.length ? `${data.length} cupom(ns) vencendo.` : 'Nenhum cupom vencendo.';
+    const tabela = document.getElementById('tabela-cupons');
+    tabela.innerHTML = data.length ? `<thead><tr><th>Cliente</th><th>Código</th><th>Validade</th></tr></thead><tbody>` +
+      data.map(c => `<tr><td>${c.cliente_nome}</td><td>${c.codigo}</td><td>${c.valido_ate}</td></tr>`).join('') + '</tbody>' : '';
+  }
+
+  function exportarPDF() {
+    html2pdf().from(document.body).set({ filename: 'relatorio.pdf' }).save();
+  }
+
+  function exportarExcel() {
+    const wb = XLSX.utils.book_new();
+    const aniversariantes = XLSX.utils.table_to_sheet(document.getElementById('tabela-aniversariantes'));
+    const cupons = XLSX.utils.table_to_sheet(document.getElementById('tabela-cupons'));
+    XLSX.utils.book_append_sheet(wb, aniversariantes, 'Aniversariantes');
+    XLSX.utils.book_append_sheet(wb, cupons, 'Cupons');
+    XLSX.writeFile(wb, 'relatorio.xlsx');
+  }
+
+  carregarTudo();
+</script>
+</body>
+</html>

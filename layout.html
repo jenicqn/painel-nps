@@ -1,0 +1,80 @@
+<div class="sidebar">
+
+  <div class="sidebar-top">
+    <div class="logo">
+      <span class="logo-dot"></span>
+      <span class="logo-text">Smash do Cabo</span>
+    </div>
+
+    <nav class="menu">
+
+  <a href="dashboard.html" class="menu-item">
+    <span>📊</span>
+    <span>Dashboard</span>
+  </a>
+
+  <a href="feedbacks.html" class="menu-item">
+    <span>💬</span>
+    <span>Feedbacks</span>
+  </a>
+
+  <a href="respostas.html" class="menu-item">
+    <span>📈</span>
+    <span>Estatísticas</span>
+  </a>
+
+  <a href="pesquisas.html" class="menu-item">
+    <span>📋</span>
+    <span>Pesquisas</span>
+  </a>
+
+  <a href="cupons.html" data-only="adm" class="menu-item">
+    <span>🎟️</span>
+    <span>Cupons</span>
+  </a>
+
+  <a href="clientes.html" data-only="adm" class="menu-item">
+    <span>👥</span>
+    <span>Clientes</span>
+  </a>
+
+  <a href="relatorios.html" data-only="adm" class="menu-item">
+    <span>📑</span>
+    <span>Relatórios</span>
+  </a>
+
+  <a href="usuarios.html" data-only="adm" class="menu-item">
+    <span>⚙️</span>
+    <span>Usuários</span>
+  </a>
+
+</nav>
+  </div>
+
+  <div class="sidebar-bottom">
+    <button class="logout-btn" onclick="logout()">Sair</button>
+  </div>
+
+</div>
+
+<script>
+  const nivel = localStorage.getItem('nivel');
+
+  if (nivel !== 'adm') {
+    document.querySelectorAll('[data-only="adm"]').forEach(el => el.style.display = 'none');
+  }
+
+  function logout() {
+    localStorage.removeItem('usuarioLogado');
+    localStorage.removeItem('nivel');
+    window.location.href = 'index.html';
+  }
+
+  // Destacar menu ativo automaticamente
+  const current = window.location.pathname.split("/").pop();
+  document.querySelectorAll(".menu-item").forEach(link => {
+    if (link.getAttribute("href") === current) {
+      link.classList.add("active");
+    }
+  });
+</script>

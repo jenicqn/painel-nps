@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Login - Painel Smash</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; font-family: 'Segoe UI', sans-serif; }
+
+    .container {
+      display: flex;
+      height: 100vh;
+    }
+
+    .left {
+      flex: 1;
+      background-color: #f97316;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .left img {
+      width: 500px;
+      max-width: 90%;
+    }
+
+    .right {
+      flex: 1;
+      background: #f9f9f9;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .right h2 {
+      font-size: 24px;
+      margin-bottom: 24px;
+      font-weight: bold;
+    }
+
+    .form {
+      width: 100%;
+      max-width: 360px;
+      background: white;
+      padding: 40px;
+      border-radius: 12px;
+      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.1);
+    }
+
+    input[type="email"],
+    input[type="password"] {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 16px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      background-color: #f97316;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #ea620b;
+    }
+
+    .esqueci {
+      margin-top: 10px;
+      text-align: center;
+      font-size: 13px;
+      color: #666;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+
+    .error {
+      color: red;
+      margin-bottom: 12px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="left">
+      <img src="https://jenicqn.github.io/smashdocabo/logo.png" alt="Logo Smash" />
+    </div>
+
+    <div class="right">
+      <h2>Acesse sua conta</h2>
+      <div class="form">
+        <div id="erro" class="error"></div>
+        <input type="email" id="email" placeholder="Email" required />
+        <input type="password" id="senha" placeholder="Senha" required />
+        <button onclick="logar()">Acessar Conta</button>
+        <div class="esqueci" onclick="redefinirSenha()">Esqueceu sua senha?</div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const SUPABASE_URL = 'https://leezpmpmqkiocvvpcwqa.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxlZXpwbXBtcWtpb2N2dnBjd3FhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE5NTI2NTUsImV4cCI6MjA4NzUyODY1NX0.M-TpjLCmwA6jyUFXG33o-L8O_1o84Ap4GM9vtxAa4KQ';
+
+    const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    async function logar() {
+  const email = document.getElementById('email').value.trim();
+  const senha = document.getElementById('senha').value.trim();
+  const erro = document.getElementById('erro');
+
+  erro.textContent = "";
+
+  if (!email || !senha) {
+    erro.textContent = "Preencha todos os campos";
+    return;
+  }
+
+  // 1️⃣ Autentica no Supabase
+  const { data, error } = await client.auth.signInWithPassword({
+    email: email,
+    password: senha
+  });
+
+  if (error) {
+    erro.textContent = "Usuário ou senha inválidos";
+    return;
+  }
+
+  const user = data.user;
+
+  // 2️⃣ Busca perfil pelo UUID
+  const { data: profile, error: profileError } = await client
+    .from("profiles")
+    .select("*")
+    .eq("id", user.id)
+    .single();
+
+  if (profileError || !profile) {
+    erro.textContent = "Usuário sem perfil configurado";
+    return;
+  }
+
+  if (!profile.ativo) {
+    erro.textContent = "Usuário inativo";
+    return;
+  }
+
+  // 3️⃣ Salva permissões
+  localStorage.setItem("nivel", profile.nivel);
+  localStorage.setItem("usuario", JSON.stringify(profile));
+
+  window.location.href = "dashboard.html";
+}
+
+    async function redefinirSenha() {
+      const email = prompt("Digite seu email:");
+      if (!email) return;
+
+      try {
+        const { error } = await client.auth.resetPasswordForEmail(email, {
+          redirectTo: 'https://painel.smashdocabo.com/reset.html'
+        });
+
+        if (error) {
+          console.error("Erro Supabase:", error);
+          alert("Erro ao enviar e-mail. Verifique se o email está correto.");
+        } else {
+          alert("Enviamos um link de redefinição para seu e-mail.");
+        }
+      } catch (err) {
+        console.error("Erro inesperado:", err);
+        alert("Erro inesperado ao tentar enviar e-mail.");
+      }
+    }
+  </script>
+</body>
+</html>
