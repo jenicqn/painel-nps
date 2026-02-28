@@ -1,21 +1,21 @@
 {
   "rewrites": [
     {
-      "source": "/(.*)",
+      "source": "/",
       "has": [
         { "type": "host", "value": "pesquisa.smashdocabo.com" }
       ],
       "destination": "/pesquisa/index.html"
     },
     {
-      "source": "/(.*)",
+      "source": "/",
       "has": [
         { "type": "host", "value": "verificacupom.smashdocabo.com" }
       ],
       "destination": "/verificacupom/index.html"
     },
     {
-      "source": "/(.*)",
+      "source": "/",
       "has": [
         { "type": "host", "value": "painel.smashdocabo.com" }
       ],
