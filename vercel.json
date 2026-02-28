@@ -1,15 +1,24 @@
 {
   "rewrites": [
     {
-      "has": [{ "type": "host", "value": "pesquisa.smashdocabo.com" }],
+      "source": "/(.*)",
+      "has": [
+        { "type": "host", "value": "pesquisa.smashdocabo.com" }
+      ],
       "destination": "/pesquisa/index.html"
     },
     {
-      "has": [{ "type": "host", "value": "verificacupom.smashdocabo.com" }],
+      "source": "/(.*)",
+      "has": [
+        { "type": "host", "value": "verificacupom.smashdocabo.com" }
+      ],
       "destination": "/verificacupom/index.html"
     },
     {
-      "has": [{ "type": "host", "value": "painel.smashdocabo.com" }],
+      "source": "/(.*)",
+      "has": [
+        { "type": "host", "value": "painel.smashdocabo.com" }
+      ],
       "destination": "/painel/dashboard.html"
     }
   ]
