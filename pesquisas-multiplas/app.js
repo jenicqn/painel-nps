@@ -8,39 +8,47 @@ if (!slug) {
 }
 
 async function carregarPesquisa() {
-  const pesquisaRes = await fetch(
-    `${SUPABASE_URL}/rest/v1/pesquisas?slug=eq.${slug}&select=id,nome,status`,
+  try {
+    const pesquisaRes = await fetch(
+      `${SUPABASE_URL}/rest/v1/pesquisas?slug=eq.${slug}&select=id,nome,status`,
+      {
+        headers: {
+          apikey: SUPABASE_ANON_KEY,
+          Authorization: `Bearer ${SUPABASE_ANON_KEY}`
+        }
+      }
+    );
+
+    const pesquisaData = await pesquisaRes.json();
+
+    if (!pesquisaData.length || pesquisaData[0].status !== "Ativo") {
+      document.body.innerHTML = "<h2>Pesquisa indisponível</h2>";
+      return;
+    }
+
+    const pesquisaId = pesquisaData[0].id;
     window.pesquisaIdGlobal = pesquisaId;
-    
-    {
-      headers: {
-        apikey: SUPABASE_ANON_KEY,
-        Authorization: `Bearer ${SUPABASE_ANON_KEY}`
+
+    document.getElementById("tituloPesquisa").innerText =
+      pesquisaData[0].nome;
+
+    const perguntasRes = await fetch(
+      `${SUPABASE_URL}/rest/v1/perguntas?pesquisa_id=eq.${pesquisaId}&order=ordem.asc`,
+      {
+        headers: {
+          apikey: SUPABASE_ANON_KEY,
+          Authorization: `Bearer ${SUPABASE_ANON_KEY}`
+        }
       }
-    }
-  );
+    );
 
-  const pesquisaData = await pesquisaRes.json();
+    const perguntas = await perguntasRes.json();
+    renderizarPerguntas(perguntas);
 
-  if (!pesquisaData.length || pesquisaData[0].status !== "Ativo") {
-    document.body.innerHTML = "<h2>Pesquisa indisponível</h2>";
-    return;
+  } catch (error) {
+    console.error(error);
+    document.body.innerHTML = "<h2>Erro ao carregar pesquisa</h2>";
   }
-
-  const pesquisaId = pesquisaData[0].id;
-
-  const perguntasRes = await fetch(
-    `${SUPABASE_URL}/rest/v1/perguntas?pesquisa_id=eq.${pesquisaId}&order=ordem.asc`,
-    {
-      headers: {
-        apikey: SUPABASE_ANON_KEY,
-        Authorization: `Bearer ${SUPABASE_ANON_KEY}`
-      }
-    }
-  );
-
-  const perguntas = await perguntasRes.json();
-  renderizarPerguntas(perguntas);
 }
 
 function renderizarPerguntas(perguntas) {
@@ -67,6 +75,14 @@ function renderizarPerguntas(perguntas) {
       html += `</div>`;
     }
 
+    if (p.tipo === "escala_0_10") {
+      html += `<div class="escala">`;
+      for (let i = 0; i <= 10; i++) {
+        html += `<input type="radio" name="${p.id}" value="${i}" ${p.obrigatoria && i === 0 ? "required" : ""}><label>${i}</label>`;
+      }
+      html += `</div>`;
+    }
+
     html += `</div>`;
     container.innerHTML += html;
   });
@@ -83,7 +99,6 @@ document
     const formData = new FormData(form);
 
     try {
-      // 1️⃣ Criar feedback
       const feedbackRes = await fetch(
         `${SUPABASE_URL}/rest/v1/feedbacks`,
         {
@@ -107,7 +122,6 @@ document
       const feedbackData = await feedbackRes.json();
       const feedbackId = feedbackData[0].id;
 
-      // 2️⃣ Inserir respostas
       const respostas = [];
 
       for (let [key, value] of formData.entries()) {
