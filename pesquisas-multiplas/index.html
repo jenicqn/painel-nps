@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Pesquisa Smash do Cabo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div class="container">
+  <img src="logo.png" class="logo">
+  <h1 id="tituloPesquisa">Pesquisa</h1>
+
+  <div id="mensagemErro" style="display:none; color:red; text-align:center; margin-bottom:20px;"></div>
+
+  <form id="formularioPesquisa">
+
+    <!-- Perguntas serão inseridas aqui dinamicamente -->
+    <div id="containerPerguntas"></div>
+
+    <button type="submit">Enviar</button>
+
+  </form>
+</div>
+
+<script src="config.js"></script>
+<script src="app.js"></script>
+
+</body>
+</html>
