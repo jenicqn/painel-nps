@@ -115,6 +115,11 @@ async function carregarPesquisas() {
   });
 
   const dados = await res.json();
+
+if (!Array.isArray(dados)) {
+  console.error("Erro retornado:", dados);
+  return;
+}
   const tbody = document.getElementById("tabelaPesquisas");
   tbody.innerHTML = "";
 
