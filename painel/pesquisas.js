@@ -178,39 +178,122 @@ async function carregarPerguntas() {
   );
 
   const perguntas = await res.json();
-
-  const tbody = document.getElementById("tabelaPerguntas");
-  tbody.innerHTML = "";
+  const container = document.getElementById("listaPerguntas");
+  container.innerHTML = "";
 
   perguntas.forEach(p => {
 
-    const tr = document.createElement("tr");
-    tr.setAttribute("data-id", p.id);
+    const div = document.createElement("div");
+    div.className = "pergunta-card";
+    div.setAttribute("data-id", p.id);
 
-    tr.innerHTML = `
-      <td>${p.texto}</td>
-      <td>${p.tipo}</td>
-      <td>${p.obrigatoria ? "Sim" : "Não"}</td>
-      <td>${p.ordem}</td>
-      <td>
+    div.innerHTML = `
+      <div class="pergunta-left">
+        <div class="drag-handle">⋮⋮</div>
+        <div class="pergunta-info">
+          <strong>${p.texto}</strong>
+          <div class="pergunta-badges">
+            <span class="badge bg-secondary">${p.tipo}</span>
+            ${p.obrigatoria ? '<span class="badge bg-success">Obrigatória</span>' : ''}
+          </div>
+        </div>
+      </div>
+
+      <div>
         <button class="btn btn-sm btn-warning"
-          onclick="editarPergunta('${p.id}', '${p.texto}', '${p.tipo}', ${p.obrigatoria}, ${p.ordem})">
+          onclick="editarPergunta('${p.id}', '${p.texto}', '${p.tipo}', ${p.obrigatoria})">
           ✏
         </button>
         <button class="btn btn-sm btn-danger"
           onclick="excluirPergunta('${p.id}')">
           🗑
         </button>
-      </td>
+      </div>
     `;
 
-    tbody.appendChild(tr);
+    container.appendChild(div);
   });
 
   ativarDragDrop();
   renderPreview(perguntas);
 }
 
+function ativarDragDrop() {
+
+  const container = document.getElementById("listaPerguntas");
+
+  new Sortable(container, {
+    animation: 150,
+    handle: ".drag-handle",
+    onEnd: async function () {
+
+      const cards = container.querySelectorAll(".pergunta-card");
+
+      for (let i = 0; i < cards.length; i++) {
+
+        const id = cards[i].getAttribute("data-id");
+
+        await fetch(`${SUPABASE_URL}/rest/v1/perguntas?id=eq.${id}`, {
+          method: "PATCH",
+          headers: {
+            apikey: SUPABASE_ANON_KEY,
+            Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ ordem: i + 1 })
+        });
+      }
+
+      carregarPerguntas();
+    }
+  });
+}
+
+function editarPergunta(id, texto, tipo, obrigatoria) {
+
+  document.getElementById("perguntaId").value = id;
+  document.getElementById("perguntaTexto").value = texto;
+  document.getElementById("perguntaTipo").value = tipo;
+  document.getElementById("perguntaObrigatoria").checked = obrigatoria;
+
+  new bootstrap.Modal(document.getElementById("modalPerguntaForm")).show();
+}
+
+async function salvarPergunta() {
+
+  const id = document.getElementById("perguntaId").value;
+  const texto = document.getElementById("perguntaTexto").value;
+  const tipo = document.getElementById("perguntaTipo").value;
+  const obrigatoria = document.getElementById("perguntaObrigatoria").checked;
+
+  const payload = {
+    texto,
+    tipo,
+    obrigatoria,
+    pesquisa_id: pesquisaPerguntasAtual
+  };
+
+  const method = id ? "PATCH" : "POST";
+  const url = id
+    ? `${SUPABASE_URL}/rest/v1/perguntas?id=eq.${id}`
+    : `${SUPABASE_URL}/rest/v1/perguntas`;
+
+  await fetch(url, {
+    method,
+    headers: {
+      apikey: SUPABASE_ANON_KEY,
+      Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(payload)
+  });
+
+  bootstrap.Modal.getInstance(
+    document.getElementById("modalPerguntaForm")
+  ).hide();
+
+  carregarPerguntas();
+}
 
 /* ===================================================== */
 /* DRAG AND DROP                                         */

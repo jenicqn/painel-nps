@@ -118,11 +118,15 @@
           <!-- LISTA DE PERGUNTAS -->
           <div class="col-md-6">
 
-            <div class="d-flex justify-content-between mb-3">
-              <button class="btn btn-success" onclick="abrirModalPergunta()">
-                + Nova Pergunta
-              </button>
-            </div>
+  <div class="d-flex justify-content-between mb-3">
+    <button class="btn btn-success" onclick="abrirModalPergunta()">
+      + Nova Pergunta
+    </button>
+  </div>
+
+  <div id="listaPerguntas" class="lista-perguntas"></div>
+
+</div>
 
             <table class="table table-bordered align-middle">
               <thead>
@@ -182,11 +186,6 @@
             <option value="escala_0_10">Escala 0 a 10</option>
             <option value="escala_1_5">Escala 1 a 5</option>
           </select>
-        </div>
-
-        <div class="mb-3">
-          <label class="form-label">Ordem</label>
-          <input type="number" id="perguntaOrdem" class="form-control">
         </div>
 
         <div class="form-check mb-3">

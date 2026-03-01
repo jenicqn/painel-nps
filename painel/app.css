@@ -102,3 +102,44 @@ body {
 .btn-acao {
   margin: 0 3px;
 }
+
+.lista-perguntas {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.pergunta-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fff;
+  border-radius: 10px;
+  padding: 12px 15px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  transition: 0.2s;
+}
+
+.pergunta-card:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.pergunta-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.drag-handle {
+  cursor: grab;
+  font-size: 18px;
+  color: #999;
+}
+
+.pergunta-info strong {
+  display: block;
+}
+
+.pergunta-badges span {
+  font-size: 11px;
+}
