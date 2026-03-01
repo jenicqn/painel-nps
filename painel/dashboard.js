@@ -1,3 +1,15 @@
+console.log("VERSAO NOVA DASHBOARD");
+
+/* =======================================================
+   CONFIG
+======================================================= */
+
+const SUPABASE_URL = CONFIG.SUPABASE_URL;
+const SUPABASE_ANON_KEY = CONFIG.SUPABASE_ANON_KEY;
+
+/* ======================================================= */
+/* ======================================================= */
+
 function formatarDataLocal(data) {
   const ano = data.getFullYear();
   const mes = String(data.getMonth() + 1).padStart(2, '0');
