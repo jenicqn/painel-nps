@@ -293,6 +293,82 @@ function renderPreview(perguntas) {
     preview.innerHTML += html;
   });
 }
+/* ===================================================== */
+/* CRUD PERGUNTAS                                        */
+/* ===================================================== */
+
+function abrirModalPergunta() {
+  document.getElementById("perguntaId").value = "";
+  document.getElementById("perguntaTexto").value = "";
+  document.getElementById("perguntaTipo").value = "texto";
+  document.getElementById("perguntaOrdem").value = "";
+  document.getElementById("perguntaObrigatoria").checked = false;
+
+  new bootstrap.Modal(document.getElementById("modalPerguntaForm")).show();
+}
+
+function editarPergunta(id, texto, tipo, obrigatoria, ordem) {
+  document.getElementById("perguntaId").value = id;
+  document.getElementById("perguntaTexto").value = texto;
+  document.getElementById("perguntaTipo").value = tipo;
+  document.getElementById("perguntaOrdem").value = ordem;
+  document.getElementById("perguntaObrigatoria").checked = obrigatoria;
+
+  new bootstrap.Modal(document.getElementById("modalPerguntaForm")).show();
+}
+
+async function salvarPergunta() {
+
+  const id = document.getElementById("perguntaId").value;
+  const texto = document.getElementById("perguntaTexto").value;
+  const tipo = document.getElementById("perguntaTipo").value;
+  const ordem = parseInt(document.getElementById("perguntaOrdem").value);
+  const obrigatoria = document.getElementById("perguntaObrigatoria").checked;
+
+  const payload = {
+    texto,
+    tipo,
+    ordem,
+    obrigatoria,
+    pesquisa_id: pesquisaPerguntasAtual
+  };
+
+  const method = id ? "PATCH" : "POST";
+  const url = id
+    ? `${SUPABASE_URL}/rest/v1/perguntas?id=eq.${id}`
+    : `${SUPABASE_URL}/rest/v1/perguntas`;
+
+  await fetch(url, {
+    method,
+    headers: {
+      apikey: SUPABASE_ANON_KEY,
+      Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(payload)
+  });
+
+  bootstrap.Modal.getInstance(
+    document.getElementById("modalPerguntaForm")
+  ).hide();
+
+  carregarPerguntas();
+}
+
+async function excluirPergunta(id) {
+
+  if (!confirm("Deseja realmente excluir esta pergunta?")) return;
+
+  await fetch(`${SUPABASE_URL}/rest/v1/perguntas?id=eq.${id}`, {
+    method: "DELETE",
+    headers: {
+      apikey: SUPABASE_ANON_KEY,
+      Authorization: `Bearer ${SUPABASE_ANON_KEY}`
+    }
+  });
+
+  carregarPerguntas();
+}
 
 /* ===================================================== */
 /* INICIALIZAÇÃO                                         */
