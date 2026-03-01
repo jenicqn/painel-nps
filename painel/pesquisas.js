@@ -246,3 +246,139 @@ async function excluirPergunta(id) {
 
   carregarPerguntas(pesquisaPerguntasAtual);
 }
+
+let pesquisaPerguntasAtual = null;
+
+async function gerenciarPerguntas(pesquisaId) {
+
+  pesquisaPerguntasAtual = pesquisaId;
+  document.getElementById("pesquisaPerguntasId").value = pesquisaId;
+
+  await carregarPerguntas();
+
+  new bootstrap.Modal(document.getElementById("modalPerguntas")).show();
+}
+
+async function carregarPerguntas() {
+
+  const res = await fetch(
+    `${SUPABASE_URL}/rest/v1/perguntas?pesquisa_id=eq.${pesquisaPerguntasAtual}&order=ordem.asc`,
+    {
+      headers: {
+        apikey: SUPABASE_ANON_KEY,
+        Authorization: `Bearer ${SUPABASE_ANON_KEY}`
+      }
+    }
+  );
+
+  const perguntas = await res.json();
+
+  const tbody = document.getElementById("tabelaPerguntas");
+  tbody.innerHTML = "";
+
+  perguntas.forEach(p => {
+
+    const tr = document.createElement("tr");
+
+    tr.innerHTML = `
+      <td>${p.texto}</td>
+      <td>${p.tipo}</td>
+      <td>${p.obrigatoria ? "Sim" : "Não"}</td>
+      <td>${p.ordem}</td>
+      <td>
+        <button class="btn btn-sm btn-warning"
+          onclick="editarPergunta('${p.id}', '${p.texto}', '${p.tipo}', ${p.obrigatoria}, ${p.ordem})">
+          ✏
+        </button>
+        <button class="btn btn-sm btn-danger"
+          onclick="excluirPergunta('${p.id}')">
+          🗑
+        </button>
+      </td>
+    `;
+
+    tbody.appendChild(tr);
+  });
+}
+
+function abrirModalPergunta() {
+
+  document.getElementById("perguntaId").value = "";
+  document.getElementById("perguntaTexto").value = "";
+  document.getElementById("perguntaTipo").value = "texto";
+  document.getElementById("perguntaOrdem").value = 1;
+  document.getElementById("perguntaObrigatoria").checked = false;
+
+  new bootstrap.Modal(document.getElementById("modalPerguntaForm")).show();
+}
+
+function editarPergunta(id, texto, tipo, obrigatoria, ordem) {
+
+  document.getElementById("perguntaId").value = id;
+  document.getElementById("perguntaTexto").value = texto;
+  document.getElementById("perguntaTipo").value = tipo;
+  document.getElementById("perguntaOrdem").value = ordem;
+  document.getElementById("perguntaObrigatoria").checked = obrigatoria;
+
+  new bootstrap.Modal(document.getElementById("modalPerguntaForm")).show();
+}
+
+async function salvarPergunta() {
+
+  const id = document.getElementById("perguntaId").value;
+  const texto = document.getElementById("perguntaTexto").value;
+  const tipo = document.getElementById("perguntaTipo").value;
+  const ordem = parseInt(document.getElementById("perguntaOrdem").value);
+  const obrigatoria = document.getElementById("perguntaObrigatoria").checked;
+
+  const payload = {
+    pesquisa_id: pesquisaPerguntasAtual,
+    texto,
+    tipo,
+    ordem,
+    obrigatoria
+  };
+
+  if (id) {
+
+    await fetch(`${SUPABASE_URL}/rest/v1/perguntas?id=eq.${id}`, {
+      method: "PATCH",
+      headers: {
+        apikey: SUPABASE_ANON_KEY,
+        Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(payload)
+    });
+
+  } else {
+
+    await fetch(`${SUPABASE_URL}/rest/v1/perguntas`, {
+      method: "POST",
+      headers: {
+        apikey: SUPABASE_ANON_KEY,
+        Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(payload)
+    });
+  }
+
+  bootstrap.Modal.getInstance(document.getElementById("modalPerguntaForm")).hide();
+  carregarPerguntas();
+}
+
+async function excluirPergunta(id) {
+
+  if (!confirm("Excluir pergunta?")) return;
+
+  await fetch(`${SUPABASE_URL}/rest/v1/perguntas?id=eq.${id}`, {
+    method: "DELETE",
+    headers: {
+      apikey: SUPABASE_ANON_KEY,
+      Authorization: `Bearer ${SUPABASE_ANON_KEY}`
+    }
+  });
+
+  carregarPerguntas();
+}

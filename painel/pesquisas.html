@@ -83,11 +83,92 @@
         <button class="btn btn-sm btn-dark" onclick="gerenciarPerguntas('${p.id}')">
   ⚙ Perguntas
 </button>
+<!-- MODAL GERENCIAR PERGUNTAS -->
+<div class="modal fade" id="modalPerguntas" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title">Gerenciar Perguntas</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+
+        <input type="hidden" id="pesquisaPerguntasId">
+
+        <div class="d-flex justify-content-between mb-3">
+          <button class="btn btn-success" onclick="abrirModalPergunta()">
+            + Nova Pergunta
+          </button>
+        </div>
+
+        <table class="table table-bordered align-middle">
+          <thead>
+            <tr>
+              <th>Texto</th>
+              <th>Tipo</th>
+              <th>Obrigatória</th>
+              <th>Ordem</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="tabelaPerguntas"></tbody>
+        </table>
 
       </div>
     </div>
   </div>
 </div>
+<!-- MODAL CRIAR / EDITAR PERGUNTA -->
+<div class="modal fade" id="modalPerguntaForm" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title">Pergunta</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+
+        <input type="hidden" id="perguntaId">
+
+        <div class="mb-3">
+          <label class="form-label">Texto</label>
+          <input type="text" id="perguntaTexto" class="form-control">
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Tipo</label>
+          <select id="perguntaTipo" class="form-select">
+            <option value="texto">Texto</option>
+            <option value="textarea">Textarea</option>
+            <option value="escala_0_10">Escala 0 a 10</option>
+            <option value="escala_1_5">Escala 1 a 5</option>
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Ordem</label>
+          <input type="number" id="perguntaOrdem" class="form-control">
+        </div>
+
+        <div class="form-check mb-3">
+          <input class="form-check-input" type="checkbox" id="perguntaObrigatoria">
+          <label class="form-check-label">Obrigatória</label>
+        </div>
+
+        <button class="btn btn-success w-100" onclick="salvarPergunta()">
+          Salvar
+        </button>
+
+      </div>
+
+    </div>
+  </div>
+</div>
+
 
 <script src="config.js"></script>
 <script src="sidebar.js"></script>
