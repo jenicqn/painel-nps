@@ -254,6 +254,9 @@ function ativarDragDrop() {
 function renderPreview(perguntas) {
 
   const preview = document.getElementById("previewPerguntas");
+
+  if (!preview) return; // evita erro se não existir
+
   preview.innerHTML = "";
 
   perguntas.forEach(p => {
@@ -290,7 +293,6 @@ function renderPreview(perguntas) {
     preview.innerHTML += html;
   });
 }
-
 
 /* ===================================================== */
 /* INICIALIZAÇÃO                                         */
