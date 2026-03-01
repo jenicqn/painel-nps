@@ -132,3 +132,117 @@ async function excluirPesquisa(id) {
 }
 
 document.addEventListener("DOMContentLoaded", carregarPesquisas);
+
+let pesquisaPerguntasAtual = null;
+
+async function gerenciarPerguntas(pesquisaId) {
+
+  pesquisaPerguntasAtual = pesquisaId;
+  document.getElementById("pesquisaPerguntasId").value = pesquisaId;
+
+  await carregarPerguntas(pesquisaId);
+
+  new bootstrap.Modal(document.getElementById("modalPerguntas")).show();
+}
+
+async function carregarPerguntas(pesquisaId) {
+
+  const res = await fetch(
+    `${SUPABASE_URL}/rest/v1/perguntas?pesquisa_id=eq.${pesquisaId}&order=ordem.asc`,
+    {
+      headers: {
+        apikey: SUPABASE_ANON_KEY,
+        Authorization: `Bearer ${SUPABASE_ANON_KEY}`
+      }
+    }
+  );
+
+  const perguntas = await res.json();
+
+  const tbody = document.getElementById("tabelaPerguntas");
+  tbody.innerHTML = "";
+
+  perguntas.forEach(p => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${p.texto}</td>
+      <td>${p.tipo}</td>
+      <td>${p.obrigatoria ? "Sim" : "Não"}</td>
+      <td>${p.ordem}</td>
+      <td>
+        <button class="btn btn-sm btn-warning" onclick="editarPergunta('${p.id}', '${p.texto}', '${p.tipo}', ${p.obrigatoria}, ${p.ordem})">✏</button>
+        <button class="btn btn-sm btn-danger" onclick="excluirPergunta('${p.id}')">🗑</button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function abrirNovaPergunta() {
+  const texto = prompt("Texto da pergunta:");
+  const tipo = prompt("Tipo (texto, textarea, escala_1_5):");
+  const obrigatoria = confirm("Obrigatória?");
+  const ordem = parseInt(prompt("Ordem (número):"));
+
+  salvarPergunta(null, texto, tipo, obrigatoria, ordem);
+}
+
+async function editarPergunta(id, textoAtual, tipoAtual, obrigAtual, ordemAtual) {
+
+  const texto = prompt("Texto:", textoAtual);
+  const tipo = prompt("Tipo:", tipoAtual);
+  const obrigatoria = confirm("Obrigatória?");
+  const ordem = parseInt(prompt("Ordem:", ordemAtual));
+
+  salvarPergunta(id, texto, tipo, obrigatoria, ordem);
+}
+
+async function salvarPergunta(id, texto, tipo, obrigatoria, ordem) {
+
+  const payload = {
+    pesquisa_id: pesquisaPerguntasAtual,
+    texto,
+    tipo,
+    obrigatoria,
+    ordem
+  };
+
+  if (id) {
+    await fetch(`${SUPABASE_URL}/rest/v1/perguntas?id=eq.${id}`, {
+      method: "PATCH",
+      headers: {
+        apikey: SUPABASE_ANON_KEY,
+        Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(payload)
+    });
+  } else {
+    await fetch(`${SUPABASE_URL}/rest/v1/perguntas`, {
+      method: "POST",
+      headers: {
+        apikey: SUPABASE_ANON_KEY,
+        Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(payload)
+    });
+  }
+
+  carregarPerguntas(pesquisaPerguntasAtual);
+}
+
+async function excluirPergunta(id) {
+
+  if (!confirm("Excluir pergunta?")) return;
+
+  await fetch(`${SUPABASE_URL}/rest/v1/perguntas?id=eq.${id}`, {
+    method: "DELETE",
+    headers: {
+      apikey: SUPABASE_ANON_KEY,
+      Authorization: `Bearer ${SUPABASE_ANON_KEY}`
+    }
+  });
+
+  carregarPerguntas(pesquisaPerguntasAtual);
+}
