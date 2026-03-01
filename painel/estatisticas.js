@@ -1,3 +1,13 @@
+/* =======================================================
+   CONFIG
+======================================================= */
+
+const SUPABASE_URL = CONFIG.SUPABASE_URL;
+const SUPABASE_ANON_KEY = CONFIG.SUPABASE_ANON_KEY;
+
+/* ======================================================= */
+/* ======================================================= */
+
 let graficoEvolucao;
 let graficoDistribuicao;
 let graficoSegmento;
