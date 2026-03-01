@@ -1,1 +1,104 @@
+/* RESET */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
 
+/* LAYOUT BASE */
+body {
+  display: flex;
+  font-family: 'Segoe UI', sans-serif;
+  background-color: #f4f6fa;
+}
+
+/* SIDEBAR */
+.sidebar {
+  width: 240px;
+  min-height: 100vh;
+  background: #111827;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.sidebar-top {
+  padding: 20px;
+}
+
+.logo {
+  font-weight: bold;
+  font-size: 18px;
+  margin-bottom: 25px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.logo-dot {
+  width: 10px;
+  height: 10px;
+  background: #f97316;
+  border-radius: 50%;
+}
+
+/* MENU */
+.menu {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.menu-item {
+  text-decoration: none;
+  color: #cbd5e1;
+  padding: 10px 12px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: 0.2s ease;
+  font-size: 14px;
+}
+
+.menu-item:hover {
+  background: #1f2937;
+  color: #fff;
+}
+
+.menu-item.active {
+  background: #f97316;
+  color: #fff;
+}
+
+/* BOTTOM */
+.sidebar-bottom {
+  padding: 20px;
+}
+
+.logout-btn {
+  width: 100%;
+  padding: 8px;
+  border: none;
+  border-radius: 6px;
+  background: #ef4444;
+  color: #fff;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.logout-btn:hover {
+  background: #dc2626;
+}
+
+/* CONTENT */
+.content {
+  flex: 1;
+  padding: 30px;
+}
+
+/* BOTÕES */
+.btn-acao {
+  margin: 0 3px;
+}
