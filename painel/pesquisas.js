@@ -1,26 +1,65 @@
+/* =======================================================
+   CONFIG
+======================================================= */
+
 const SUPABASE_URL = CONFIG.SUPABASE_URL;
 const SUPABASE_ANON_KEY = CONFIG.SUPABASE_ANON_KEY;
 
 let pesquisaPerguntasAtual = null;
 
-/* ================= PESQUISAS ================= */
+/* =======================================================
+   API BASE - PADRÃO SAAS
+======================================================= */
+
+async function apiRequest(endpoint, method = "GET", body = null) {
+
+  try {
+
+    const response = await fetch(`${SUPABASE_URL}/rest/v1/${endpoint}`, {
+      method,
+      headers: {
+        apikey: SUPABASE_ANON_KEY,
+        Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+        "Content-Type": "application/json",
+        Prefer: "return=representation"
+      },
+      body: body ? JSON.stringify(body) : null
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(error);
+    }
+
+    return await response.json();
+
+  } catch (error) {
+    console.error("API Error:", error);
+    alert("Ocorreu um erro na comunicação com o servidor.");
+    throw error;
+  }
+}
+
+/* =======================================================
+   PESQUISAS
+======================================================= */
 
 async function carregarPesquisas() {
 
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/pesquisas?select=*`, {
-    headers: {
-      apikey: SUPABASE_ANON_KEY,
-      Authorization: `Bearer ${SUPABASE_ANON_KEY}`
-    }
-  });
+  const dados = await apiRequest("pesquisas?select=*&order=created_at.desc");
 
-  const dados = await res.json();
   const tbody = document.getElementById("tabelaPesquisas");
   tbody.innerHTML = "";
 
   dados.forEach(p => {
 
     const tr = document.createElement("tr");
+
+    const statusBtnClass =
+      p.status === "Ativo" ? "btn-outline-warning" : "btn-outline-success";
+
+    const statusIcon =
+      p.status === "Ativo" ? "⏸" : "▶";
 
     tr.innerHTML = `
       <td>${p.nome}</td>
@@ -30,9 +69,27 @@ async function carregarPesquisas() {
           ${p.status}
         </span>
       </td>
-      <td>
+      <td class="d-flex gap-2">
+
         <button class="btn btn-sm btn-dark"
-          onclick="gerenciarPerguntas('${p.id}')">⚙</button>
+          data-id="${p.id}"
+          onclick="gerenciarPerguntas(this.dataset.id)">
+          ⚙
+        </button>
+
+        <button class="btn btn-sm ${statusBtnClass}"
+          data-id="${p.id}"
+          data-status="${p.status}"
+          onclick="toggleStatusPesquisa(this.dataset.id, this.dataset.status)">
+          ${statusIcon}
+        </button>
+
+        <button class="btn btn-sm btn-outline-danger"
+          data-id="${p.id}"
+          onclick="softDeletePesquisa(this.dataset.id)">
+          🗑
+        </button>
+
       </td>
     `;
 
@@ -40,7 +97,39 @@ async function carregarPesquisas() {
   });
 }
 
-/* ================= PERGUNTAS ================= */
+async function toggleStatusPesquisa(id, statusAtual) {
+
+  const novoStatus = statusAtual === "Ativo" ? "Inativo" : "Ativo";
+
+  await apiRequest(
+    `pesquisas?id=eq.${id}`,
+    "PATCH",
+    { status: novoStatus }
+  );
+
+  carregarPesquisas();
+}
+
+/* =======================================================
+   SOFT DELETE (PADRÃO SAAS)
+======================================================= */
+
+async function softDeletePesquisa(id) {
+
+  if (!confirm("Deseja realmente excluir esta pesquisa?")) return;
+
+  await apiRequest(
+    `pesquisas?id=eq.${id}`,
+    "PATCH",
+    { deleted_at: new Date().toISOString(), status: "Inativo" }
+  );
+
+  carregarPesquisas();
+}
+
+/* =======================================================
+   PERGUNTAS
+======================================================= */
 
 async function gerenciarPerguntas(id) {
   pesquisaPerguntasAtual = id;
@@ -50,17 +139,10 @@ async function gerenciarPerguntas(id) {
 
 async function carregarPerguntas() {
 
-  const res = await fetch(
-    `${SUPABASE_URL}/rest/v1/perguntas?pesquisa_id=eq.${pesquisaPerguntasAtual}&order=ordem.asc`,
-    {
-      headers: {
-        apikey: SUPABASE_ANON_KEY,
-        Authorization: `Bearer ${SUPABASE_ANON_KEY}`
-      }
-    }
+  const perguntas = await apiRequest(
+    `perguntas?pesquisa_id=eq.${pesquisaPerguntasAtual}&order=ordem.asc`
   );
 
-  const perguntas = await res.json();
   const container = document.getElementById("listaPerguntas");
   container.innerHTML = "";
 
@@ -84,9 +166,19 @@ async function carregarPerguntas() {
 
       <div>
         <button class="btn btn-sm btn-outline-warning"
-          onclick="editarPergunta('${p.id}', '${p.texto}', '${p.tipo}', ${p.obrigatoria})">✏</button>
+          data-id="${p.id}"
+          data-texto="${p.texto}"
+          data-tipo="${p.tipo}"
+          data-obrigatoria="${p.obrigatoria}"
+          onclick="editarPergunta(this)">
+          ✏
+        </button>
+
         <button class="btn btn-sm btn-outline-danger"
-          onclick="excluirPergunta('${p.id}')">🗑</button>
+          data-id="${p.id}"
+          onclick="excluirPergunta(this.dataset.id)">
+          🗑
+        </button>
       </div>
     `;
 
@@ -96,6 +188,10 @@ async function carregarPerguntas() {
   ativarDragDrop();
   renderPreview(perguntas);
 }
+
+/* =======================================================
+   DRAG OTIMIZADO
+======================================================= */
 
 function ativarDragDrop() {
 
@@ -108,74 +204,75 @@ function ativarDragDrop() {
 
       const cards = container.querySelectorAll(".builder-item");
 
-      for (let i = 0; i < cards.length; i++) {
+      const updates = [];
 
-        const id = cards[i].getAttribute("data-id");
+      cards.forEach((card, index) => {
 
-        await fetch(`${SUPABASE_URL}/rest/v1/perguntas?id=eq.${id}`, {
-          method: "PATCH",
-          headers: {
-            apikey: SUPABASE_ANON_KEY,
-            Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({ ordem: i + 1 })
-        });
-      }
+        const id = card.getAttribute("data-id");
 
+        updates.push(
+          apiRequest(
+            `perguntas?id=eq.${id}`,
+            "PATCH",
+            { ordem: index + 1 }
+          )
+        );
+      });
+
+      await Promise.all(updates);
       carregarPerguntas();
     }
   });
 }
 
-/* ================= CRUD PERGUNTAS ================= */
+/* =======================================================
+   CRUD PERGUNTAS
+======================================================= */
 
 function abrirModalPergunta() {
+
   document.getElementById("perguntaId").value = "";
   document.getElementById("perguntaTexto").value = "";
   document.getElementById("perguntaTipo").value = "texto";
   document.getElementById("perguntaObrigatoria").checked = false;
+
   new bootstrap.Modal(document.getElementById("modalPerguntaForm")).show();
 }
 
-function editarPergunta(id, texto, tipo, obrigatoria) {
-  document.getElementById("perguntaId").value = id;
-  document.getElementById("perguntaTexto").value = texto;
-  document.getElementById("perguntaTipo").value = tipo;
-  document.getElementById("perguntaObrigatoria").checked = obrigatoria;
+function editarPergunta(button) {
+
+  document.getElementById("perguntaId").value = button.dataset.id;
+  document.getElementById("perguntaTexto").value = button.dataset.texto;
+  document.getElementById("perguntaTipo").value = button.dataset.tipo;
+  document.getElementById("perguntaObrigatoria").checked =
+    button.dataset.obrigatoria === "true";
+
   new bootstrap.Modal(document.getElementById("modalPerguntaForm")).show();
 }
 
 async function salvarPergunta() {
 
   const id = document.getElementById("perguntaId").value;
-  const texto = document.getElementById("perguntaTexto").value;
-  const tipo = document.getElementById("perguntaTipo").value;
-  const obrigatoria = document.getElementById("perguntaObrigatoria").checked;
 
   const payload = {
-    texto,
-    tipo,
-    obrigatoria,
+    texto: document.getElementById("perguntaTexto").value,
+    tipo: document.getElementById("perguntaTipo").value,
+    obrigatoria: document.getElementById("perguntaObrigatoria").checked,
     pesquisa_id: pesquisaPerguntasAtual
   };
 
+  const endpoint = id
+    ? `perguntas?id=eq.${id}`
+    : `perguntas`;
+
   const method = id ? "PATCH" : "POST";
-  const url = id
-    ? `${SUPABASE_URL}/rest/v1/perguntas?id=eq.${id}`
-    : `${SUPABASE_URL}/rest/v1/perguntas`;
 
-  await fetch(url, {
-    method,
-    headers: {
-      apikey: SUPABASE_ANON_KEY,
-      Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(payload)
-  });
+  await apiRequest(endpoint, method, payload);
 
-  bootstrap.Modal.getInstance(document.getElementById("modalPerguntaForm")).hide();
+  bootstrap.Modal.getInstance(
+    document.getElementById("modalPerguntaForm")
+  ).hide();
+
   carregarPerguntas();
 }
 
@@ -183,18 +280,17 @@ async function excluirPergunta(id) {
 
   if (!confirm("Deseja excluir esta pergunta?")) return;
 
-  await fetch(`${SUPABASE_URL}/rest/v1/perguntas?id=eq.${id}`, {
-    method: "DELETE",
-    headers: {
-      apikey: SUPABASE_ANON_KEY,
-      Authorization: `Bearer ${SUPABASE_ANON_KEY}`
-    }
-  });
+  await apiRequest(
+    `perguntas?id=eq.${id}`,
+    "DELETE"
+  );
 
   carregarPerguntas();
 }
 
-/* ================= PREVIEW ================= */
+/* =======================================================
+   PREVIEW
+======================================================= */
 
 function renderPreview(perguntas) {
 
@@ -234,5 +330,9 @@ function renderPreview(perguntas) {
     preview.innerHTML += html;
   });
 }
+
+/* =======================================================
+   INIT
+======================================================= */
 
 document.addEventListener("DOMContentLoaded", carregarPesquisas);
