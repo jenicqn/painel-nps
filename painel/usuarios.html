@@ -14,10 +14,9 @@
   <div id="sidebar-container"></div>
 
   <div class="conteudo">
-
     <div class="topbar d-flex justify-content-between align-items-center mb-4">
       <h3>Usuários</h3>
-      <button class="btn btn-primary" onclick="abrirModalNovo()">+ Novo Usuário</button>
+      <button class="btn btn-primary" id="btnNovoUsuario">+ Novo Usuário</button>
     </div>
 
     <div class="card p-3">
@@ -38,7 +37,6 @@
         </table>
       </div>
     </div>
-
   </div>
 
   <!-- Modal Novo Usuário -->
@@ -144,103 +142,7 @@
 
   <script src="config.js"></script>
   <script src="sidebar.js"></script>
-  <script>
+  <script src="usuarios.js"></script>
 
-    const API = 'https://user-api-kohl.vercel.app/api';
-
-    // Proteção de acesso
-    const nivel = localStorage.getItem('nivel');
-    if (nivel !== 'adm') {
-      alert('Acesso restrito.');
-      window.location.href = 'dashboard.html';
-    }
-
-    // =====================
-    // CARREGAR USUÁRIOS
-    // =====================
-    async function carregarUsuarios() {
-      const tbody = document.getElementById('corpoTabela');
-      tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">Carregando...</td></tr>';
-
-      const res = await fetch(`${API}/listar-usuarios`);
-      const usuarios = await res.json();
-
-      tbody.innerHTML = '';
-
-      if (!usuarios.length) {
-        tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">Nenhum usuário encontrado.</td></tr>';
-        return;
-      }
-
-      usuarios.forEach(u => {
-        const statusBadge = u.ativo
-          ? '<span class="badge bg-success">Ativo</span>'
-          : '<span class="badge bg-secondary">Inativo</span>';
-
-        const nivelBadge = u.nivel === 'adm'
-          ? '<span class="badge bg-danger">Administrador</span>'
-          : '<span class="badge bg-primary">User</span>';
-
-        tbody.innerHTML += `
-          <tr>
-            <td>${u.nome || '-'}</td>
-            <td>${u.email || '-'}</td>
-            <td>${nivelBadge}</td>
-            <td>${statusBadge}</td>
-            <td>
-              <button class="btn btn-sm btn-primary me-1" onclick="abrirModalEditar('${u.id}', '${u.nome?.replace(/'/g,"\\'")}', '${u.email}', '${u.nivel}')" title="Editar">
-                <i class="bi bi-pencil"></i>
-              </button>
-              <button class="btn btn-sm btn-warning me-1" onclick="abrirModalSenha('${u.id}')" title="Trocar senha">
-                <i class="bi bi-key"></i>
-              </button>
-              <button class="btn btn-sm ${u.ativo ? 'btn-secondary' : 'btn-success'} me-1" onclick="alternarStatus('${u.id}', ${u.ativo})" title="${u.ativo ? 'Desativar' : 'Ativar'}">
-                <i class="bi bi-${u.ativo ? 'pause' : 'play'}"></i>
-              </button>
-              <button class="btn btn-sm btn-danger" onclick="excluirUsuario('${u.id}')" title="Excluir">
-                <i class="bi bi-trash"></i>
-              </button>
-            </td>
-          </tr>`;
-      });
-    }
-
-    // =====================
-    // NOVO USUÁRIO
-    // =====================
-    function abrirModalNovo() {
-      document.getElementById('formNovo').reset();
-      document.getElementById('alertNovo').classList.add('d-none');
-      new bootstrap.Modal(document.getElementById('modalNovo')).show();
-    }
-
-    document.getElementById('formNovo').addEventListener('submit', async e => {
-      e.preventDefault();
-      const alerta = document.getElementById('alertNovo');
-      alerta.classList.add('d-none');
-
-      const res = await fetch(`${API}/criar-usuario`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          nome: document.getElementById('novoNome').value,
-          email: document.getElementById('novoEmail').value,
-          senha: document.getElementById('novaSenha').value,
-          nivel: document.getElementById('novoNivel').value
-        })
-      });
-
-      if (res.ok) {
-        bootstrap.Modal.getInstance(document.getElementById('modalNovo')).hide();
-        carregarUsuarios();
-      } else {
-        const err = await res.json();
-        alerta.textContent = err.error || 'Erro ao criar usuário.';
-        alerta.className = 'alert alert-danger mt-2';
-      }
-    });
-
-    // =====================
-    // EDITAR
-    // =====================
-    function abrirModalEditar(id, nome, ema
+</body>
+</html>
