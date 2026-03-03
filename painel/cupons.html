@@ -66,32 +66,49 @@
     </div>
   </div>
 
-  <!-- TABELA -->
-  <div class="card p-3">
-    <table class="table table-hover align-middle">
-      <thead>
-        <tr>
-          <th>Código</th>
-          <th>Cliente</th>
-          <th>Brinde</th>
-          <th>Validade</th>
-          <th>Status</th>
-          <th>Ação</th>
-        </tr>
-      </thead>
-      <tbody id="tabelaCupons"></tbody>
-    </table>
+  <!-- TABELA TODOS OS CUPONS -->
+  <div class="card p-3 mb-4">
+    <h6 class="mb-3">Cupons</h6>
+    <div class="table-responsive">
+      <table class="table table-hover table-sm align-middle">
+        <thead class="table-light">
+          <tr>
+            <th>Código</th>
+            <th>Cliente</th>
+            <th>Brinde</th>
+            <th>Validade</th>
+            <th>Status</th>
+            <th>Ação</th>
+          </tr>
+        </thead>
+        <tbody id="tabelaCupons"></tbody>
+      </table>
+    </div>
+    <div id="paginacaoCupons" class="d-flex justify-content-between align-items-center mt-3"></div>
   </div>
 
-  <!-- GRÁFICO -->
-  <div class="card p-4 mt-4 mb-4">
-    <h6>Uso de Cupons no Mês</h6>
-    <canvas id="graficoCupons"></canvas>
+  <!-- TABELA CUPONS UTILIZADOS -->
+  <div class="card p-3 mb-4">
+    <h6 class="mb-3">Cupons Utilizados no Mês</h6>
+    <div class="table-responsive">
+      <table class="table table-hover table-sm align-middle">
+        <thead class="table-light">
+          <tr>
+            <th>Código</th>
+            <th>Cliente</th>
+            <th>Brinde</th>
+            <th>Data Utilizado</th>
+            <th>Validade</th>
+          </tr>
+        </thead>
+        <tbody id="tabelaUtilizados"></tbody>
+      </table>
+    </div>
+    <div id="paginacaoUtilizados" class="d-flex justify-content-between align-items-center mt-3"></div>
   </div>
 
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="config.js"></script>
 <script src="sidebar.js"></script>
 <script src="cupons.js"></script>
