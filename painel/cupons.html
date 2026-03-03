@@ -88,24 +88,37 @@
   </div>
 
   <!-- TABELA CUPONS UTILIZADOS -->
-  <div class="card p-3 mb-4">
-    <h6 class="mb-3">Cupons Utilizados no Mês</h6>
-    <div class="table-responsive">
-      <table class="table table-hover table-sm align-middle">
-        <thead class="table-light">
-          <tr>
-            <th>Código</th>
-            <th>Cliente</th>
-            <th>Brinde</th>
-            <th>Data Utilizado</th>
-            <th>Validade</th>
-          </tr>
-        </thead>
-        <tbody id="tabelaUtilizados"></tbody>
-      </table>
+<div class="card p-3 mb-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h6 class="mb-0">Cupons Utilizados no Mês</h6>
+    <div class="d-flex gap-2 align-items-end">
+      <div>
+        <label class="form-label mb-1 small">De</label>
+        <input type="date" id="utilizadosDataInicio" class="form-control form-control-sm">
+      </div>
+      <div>
+        <label class="form-label mb-1 small">Até</label>
+        <input type="date" id="utilizadosDataFim" class="form-control form-control-sm">
+      </div>
+      <button class="btn btn-sm btn-primary" onclick="filtrarUtilizados()">Filtrar</button>
     </div>
-    <div id="paginacaoUtilizados" class="d-flex justify-content-between align-items-center mt-3"></div>
   </div>
+  <div class="table-responsive">
+    <table class="table table-hover table-sm align-middle">
+      <thead class="table-light">
+        <tr>
+          <th>Código</th>
+          <th>Cliente</th>
+          <th>Brinde</th>
+          <th>Data Utilizado</th>
+          <th>Validade</th>
+        </tr>
+      </thead>
+      <tbody id="tabelaUtilizados"></tbody>
+    </table>
+  </div>
+  <div id="paginacaoUtilizados" class="d-flex justify-content-between align-items-center mt-3"></div>
+</div>
 
 </div>
 

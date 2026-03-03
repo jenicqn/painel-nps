@@ -3,6 +3,7 @@ const SUPABASE_ANON_KEY = CONFIG.SUPABASE_ANON_KEY;
 
 let cupons = [];
 let utilizados = [];
+let utilizadosFiltrados = [];
 let paginaCupons = 1;
 let paginaUtilizados = 1;
 const limite = 10;
@@ -59,8 +60,9 @@ async function carregarCupons() {
 
   let dados = await res.json();
 
-  // Separa utilizados para a segunda tabela
+  // Separa utilizados para a segunda tabela (todos do mês, sem filtro de status)
   utilizados = dados.filter(c => c.utilizado === true);
+  utilizadosFiltrados = [...utilizados];
 
   // Aplica filtro de status na tabela principal
   if (status === "utilizado") dados = dados.filter(c => c.utilizado === true);
@@ -72,7 +74,9 @@ async function carregarCupons() {
 
   atualizarKPIs();
   renderizarTabelaCupons();
-  renderizarTabelaUtilizados();
+
+  // Aplica filtro de data dos utilizados com as datas atuais
+  filtrarUtilizados();
 }
 
 /* ================= KPIs ================= */
@@ -119,7 +123,25 @@ function renderizarTabelaCupons() {
     });
   }
 
-  renderizarPaginacao("paginacaoCupons", paginaCupons, cupons.length, "paginaCupons");
+  renderizarPaginacao("paginacaoCupons", paginaCupons, cupons.length, "cupons");
+}
+
+/* ================= FILTRO UTILIZADOS ================= */
+
+function filtrarUtilizados() {
+  const inicio = document.getElementById("utilizadosDataInicio").value;
+  const fim = document.getElementById("utilizadosDataFim").value;
+
+  utilizadosFiltrados = utilizados.filter(c => {
+    if (!c.data_utilizado) return false;
+    const data = c.data_utilizado.split("T")[0];
+    if (inicio && data < inicio) return false;
+    if (fim && data > fim) return false;
+    return true;
+  });
+
+  paginaUtilizados = 1;
+  renderizarTabelaUtilizados();
 }
 
 /* ================= TABELA UTILIZADOS ================= */
@@ -129,12 +151,12 @@ function renderizarTabelaUtilizados() {
   tbody.innerHTML = "";
 
   const inicio = (paginaUtilizados - 1) * limite;
-  const pageDados = [...utilizados]
+  const pageDados = [...utilizadosFiltrados]
     .sort((a, b) => new Date(b.data_utilizado) - new Date(a.data_utilizado))
     .slice(inicio, inicio + limite);
 
   if (!pageDados.length) {
-    tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">Nenhum cupom utilizado neste mês.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">Nenhum cupom utilizado encontrado.</td></tr>';
   } else {
     pageDados.forEach(cupom => {
       tbody.innerHTML += `
@@ -148,24 +170,27 @@ function renderizarTabelaUtilizados() {
     });
   }
 
-  renderizarPaginacao("paginacaoUtilizados", paginaUtilizados, utilizados.length, "paginaUtilizados");
+  renderizarPaginacao("paginacaoUtilizados", paginaUtilizados, utilizadosFiltrados.length, "utilizados");
 }
 
 /* ================= PAGINAÇÃO ================= */
 
-function renderizarPaginacao(elementId, paginaAtual, total, variavel) {
+function renderizarPaginacao(elementId, paginaAtual, total, tipo) {
   const totalPaginas = Math.ceil(total / limite) || 1;
   const el = document.getElementById(elementId);
+
+  const acaoAnterior = tipo === "cupons"
+    ? "paginaCupons--; renderizarTabelaCupons();"
+    : "paginaUtilizados--; renderizarTabelaUtilizados();";
+
+  const acaoProxima = tipo === "cupons"
+    ? "paginaCupons++; renderizarTabelaCupons();"
+    : "paginaUtilizados++; renderizarTabelaUtilizados();";
+
   el.innerHTML = `
-    <button class="btn btn-sm btn-secondary" ${paginaAtual === 1 ? "disabled" : ""}
-      onclick="${variavel}--; ${variavel === 'paginaCupons' ? 'renderizarTabelaCupons()' : 'renderizarTabelaUtilizados()'}">
-      Anterior
-    </button>
+    <button class="btn btn-sm btn-secondary" ${paginaAtual === 1 ? "disabled" : ""} onclick="${acaoAnterior}">Anterior</button>
     <span class="small text-muted">Página ${paginaAtual} de ${totalPaginas}</span>
-    <button class="btn btn-sm btn-secondary" ${paginaAtual >= totalPaginas ? "disabled" : ""}
-      onclick="${variavel}++; ${variavel === 'paginaCupons' ? 'renderizarTabelaCupons()' : 'renderizarTabelaUtilizados()'}">
-      Próxima
-    </button>`;
+    <button class="btn btn-sm btn-secondary" ${paginaAtual >= totalPaginas ? "disabled" : ""} onclick="${acaoProxima}">Próxima</button>`;
 }
 
 /* ================= AÇÃO ================= */
@@ -193,6 +218,14 @@ async function darBaixa(codigo) {
 
 document.addEventListener("DOMContentLoaded", () => {
   mesAtualPadrao();
+
+  // Datas padrão para filtro de utilizados (mês atual)
+  const hoje = new Date();
+  const inicioMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+  const fimMes = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0);
+  document.getElementById("utilizadosDataInicio").value = inicioMes.toISOString().split("T")[0];
+  document.getElementById("utilizadosDataFim").value = fimMes.toISOString().split("T")[0];
+
   carregarCupons();
   document.getElementById("btnFiltrar").addEventListener("click", carregarCupons);
 });
