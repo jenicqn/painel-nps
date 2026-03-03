@@ -1,78 +1,88 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Usuários</title>
+  <meta charset="UTF-8">
+  <title>Usuários - Smash do Cabo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  <style>
-    body { margin: 0; font-family: 'Segoe UI', sans-serif; display: flex; }
-    .conteudo { flex: 1; padding: 40px; background-color: #f4f6fa; }
-    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
-    .sidebar {
-      width: 220px; background-color: #0f172a; color: white;
-      display: flex; flex-direction: column; justify-content: space-between; min-height: 100vh;
-    }
-    .sidebar h4 { padding: 20px; margin: 0; font-size: 20px; font-weight: bold; border-bottom: 1px solid #1e2a47; }
-    .sidebar a {
-      display: block; padding: 15px 20px; color: white; text-decoration: none;
-    }
-    .sidebar a:hover, .sidebar a.active { background-color: #1e2a47; }
-    .logout-btn {
-      background: #dc3545; color: white; border: none;
-      padding: 12px 20px; margin: 20px; border-radius: 4px; text-align: center; cursor: pointer;
-    }
-    .btn-icon {
-      border: none; margin: 0 3px; padding: 6px 8px; border-radius: 4px;
-    }
-    .btn-edit { background-color: #0d6efd; color: white; }
-    .btn-pass { background-color: #198754; color: white; }
-    .btn-delete { background-color: #dc3545; color: white; }
-    .btn-toggle { background-color: #6c757d; color: white; }
-  </style>
+  <link rel="stylesheet" href="layout.css">
 </head>
 <body>
-  <div class="sidebar">
-    <div>
-      <h4>Painel</h4>
-      <a href="painel.html">Início</a>
-      <a href="cupons.html" data-only="adm">Cupons</a>
-      <a href="clientes.html" data-only="adm">Clientes</a>
-      <a href="pesquisas.html">Pesquisas</a>
-      <a href="respostas.html">Respostas</a>
-      <a href="relatorios.html" data-only="adm">Relatórios</a>
-      <a href="usuarios.html" class="active" data-only="adm">Usuários</a>
-    </div>
-    <button class="logout-btn" onclick="logout()">Sair</button>
-  </div>
+
+  <div id="sidebar-container"></div>
 
   <div class="conteudo">
-    <div class="header">
-      <h3>Lista de Usuários</h3>
-      <button class="btn btn-primary" onclick="abrirModalNovoUsuario()">+ Novo Usuário</button>
+
+    <div class="topbar d-flex justify-content-between align-items-center mb-4">
+      <h3>Usuários</h3>
+      <button class="btn btn-primary" onclick="abrirModalNovo()">+ Novo Usuário</button>
     </div>
 
-    <div id="carregandoUsuarios">Carregando usuários...</div>
-    <table class="table table-bordered align-middle d-none" id="tabelaUsuarios">
-      <thead class="table-light">
-        <tr>
-          <th>Nome</th>
-          <th>Email</th>
-          <th>Status</th>
-          <th>Nível</th>
-          <th>Ações</th>
-        </tr>
-      </thead>
-      <tbody id="corpoTabela"></tbody>
-    </table>
+    <div class="card p-3">
+      <div class="table-responsive">
+        <table class="table table-striped table-sm align-middle">
+          <thead class="table-light">
+            <tr>
+              <th>Nome</th>
+              <th>Email</th>
+              <th>Nível</th>
+              <th>Status</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="corpoTabela">
+            <tr><td colspan="5" class="text-center text-muted">Carregando...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
   </div>
 
-  <!-- Modais -->
-  <div class="modal fade" id="modalEditarUsuario" tabindex="-1">
+  <!-- Modal Novo Usuário -->
+  <div class="modal fade" id="modalNovo" tabindex="-1">
     <div class="modal-dialog">
-      <form id="formEditarUsuario" class="modal-content">
+      <form id="formNovo" class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Novo Usuário</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">Nome</label>
+            <input type="text" class="form-control" id="novoNome" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Email</label>
+            <input type="email" class="form-control" id="novoEmail" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Senha</label>
+            <input type="password" class="form-control" id="novaSenha" required minlength="6">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Nível</label>
+            <select class="form-select" id="novoNivel">
+              <option value="user">User</option>
+              <option value="adm">Administrador</option>
+            </select>
+          </div>
+          <div id="alertNovo" class="alert d-none mt-2"></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Criar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Editar -->
+  <div class="modal fade" id="modalEditar" tabindex="-1">
+    <div class="modal-dialog">
+      <form id="formEditar" class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title">Editar Usuário</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
@@ -87,6 +97,14 @@
             <label class="form-label">Email</label>
             <input type="email" class="form-control" id="editarEmail" required>
           </div>
+          <div class="mb-3">
+            <label class="form-label">Nível</label>
+            <select class="form-select" id="editarNivel">
+              <option value="user">User</option>
+              <option value="adm">Administrador</option>
+            </select>
+          </div>
+          <div id="alertEditar" class="alert d-none mt-2"></div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
@@ -96,6 +114,7 @@
     </div>
   </div>
 
+  <!-- Modal Senha -->
   <div class="modal fade" id="modalSenha" tabindex="-1">
     <div class="modal-dialog">
       <form id="formSenha" class="modal-content">
@@ -107,13 +126,13 @@
           <input type="hidden" id="senhaId">
           <div class="mb-3">
             <label class="form-label">Nova Senha</label>
-            <input type="password" class="form-control" id="novaSenha" required minlength="6">
+            <input type="password" class="form-control" id="novaSenhaModal" required minlength="6">
           </div>
           <div class="mb-3">
             <label class="form-label">Confirmar Senha</label>
             <input type="password" class="form-control" id="confirmarSenha" required minlength="6">
           </div>
-          <div id="alertSenha" class="alert d-none mt-2" role="alert"></div>
+          <div id="alertSenha" class="alert d-none mt-2"></div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
@@ -123,159 +142,105 @@
     </div>
   </div>
 
-<script>
-const nivel = localStorage.getItem('nivel');
-if (nivel !== 'adm') {
-  alert('Acesso restrito.');
-  window.location.href = 'respostas.html';
-}
-document.querySelectorAll('[data-only="adm"]').forEach(el => {
-  if (nivel !== 'adm') el.style.display = 'none';
-});
+  <script src="config.js"></script>
+  <script src="sidebar.js"></script>
+  <script>
 
-function logout() {
-  localStorage.clear();
-  localStorage.removeItem('logoutExecutado'); // limpa o flag de inatividade
-  window.location.href = 'index.html';
-}
+    const API = 'https://user-api-kohl.vercel.app/api';
 
-function abrirModalNovoUsuario() {
-  window.location.href = 'usuarios.html#novo';
-}
-
-function abrirModalEditar(id, nome, email) {
-  document.getElementById('editarId').value = id;
-  document.getElementById('editarNome').value = nome;
-  document.getElementById('editarEmail').value = email;
-  new bootstrap.Modal(document.getElementById('modalEditarUsuario')).show();
-}
-
-function abrirModalSenha(id) {
-  document.getElementById('senhaId').value = id;
-  document.getElementById('novaSenha').value = '';
-  document.getElementById('confirmarSenha').value = '';
-  document.getElementById('alertSenha').classList.add('d-none');
-  new bootstrap.Modal(document.getElementById('modalSenha')).show();
-}
-
-async function excluirUsuario(id) {
-  if (!confirm('Deseja realmente excluir este usuário?')) return;
-  await fetch(`https://supabase-user-api-painel.vercel.app/api/excluir-usuario?id=${id}`, { method: 'DELETE' });
-  carregarUsuarios();
-}
-
-async function alternarStatus(id, statusAtual) {
-  const novoStatus = !statusAtual;
-  await fetch('https://supabase-user-api-painel.vercel.app/api/atualizar-status', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ id, ativo: novoStatus })
-  });
-  carregarUsuarios();
-}
-
-document.getElementById('formEditarUsuario').addEventListener('submit', async function(e) {
-  e.preventDefault();
-  const id = document.getElementById('editarId').value;
-  const nome = document.getElementById('editarNome').value;
-  const email = document.getElementById('editarEmail').value;
-  await fetch('https://supabase-user-api-painel.vercel.app/api/atualizar-usuario', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ id, nome, email })
-  });
-  bootstrap.Modal.getInstance(document.getElementById('modalEditarUsuario')).hide();
-  carregarUsuarios();
-});
-
-document.getElementById('formSenha').addEventListener('submit', async function(e) {
-  e.preventDefault();
-  const id = document.getElementById('senhaId').value;
-  const senha = document.getElementById('novaSenha').value;
-  const confirmar = document.getElementById('confirmarSenha').value;
-  const alerta = document.getElementById('alertSenha');
-  alerta.classList.add('d-none');
-
-  if (senha !== confirmar) {
-    alerta.textContent = 'As senhas não coincidem.';
-    alerta.classList.remove('d-none');
-    alerta.classList.remove('alert-success');
-    alerta.classList.add('alert-danger');
-    return;
-  }
-
-  const res = await fetch('https://supabase-user-api-painel.vercel.app/api/atualizar-senha', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ id, senha })
-  });
-
-  if (res.ok) {
-    alerta.textContent = 'Senha atualizada com sucesso!';
-    alerta.classList.remove('d-none');
-    alerta.classList.remove('alert-danger');
-    alerta.classList.add('alert-success');
-    setTimeout(() => bootstrap.Modal.getInstance(document.getElementById('modalSenha')).hide(), 1500);
-  } else {
-    const data = await res.json();
-    alerta.textContent = data.error || 'Erro ao atualizar senha';
-    alerta.classList.remove('d-none');
-    alerta.classList.add('alert-danger');
-  }
-});
-
-async function carregarUsuarios() {
-  const resposta = await fetch('https://supabase-user-api-painel.vercel.app/api/listar-usuarios');
-  const data = await resposta.json();
-  const corpoTabela = document.getElementById('corpoTabela');
-  corpoTabela.innerHTML = '';
-  data.forEach(usuario => {
-    const linha = document.createElement('tr');
-    const nome = usuario.nome.replace(/'/g, "\\'");
-    const email = usuario.email.replace(/'/g, "\\'");
-    linha.innerHTML = `
-      <td>${usuario.nome}</td>
-      <td>${usuario.email}</td>
-      <td>${usuario.ativo ? 'Ativo' : 'Inativo'}</td>
-      <td>${usuario.nivel}</td>
-      <td>
-        <button class="btn-icon btn-edit" onclick="abrirModalEditar('${usuario.id}', '${nome}', '${email}')"><i class="bi bi-pencil"></i></button>
-        <button class="btn-icon btn-pass" onclick="abrirModalSenha('${usuario.id}')"><i class="bi bi-key"></i></button>
-        <button class="btn-icon btn-toggle" onclick="alternarStatus('${usuario.id}', ${usuario.ativo})"><i class="bi bi-shuffle"></i></button>
-        <button class="btn-icon btn-delete" onclick="excluirUsuario('${usuario.id}')"><i class="bi bi-trash"></i></button>
-      </td>
-    `;
-    corpoTabela.appendChild(linha);
-  });
-  document.getElementById('carregandoUsuarios').classList.add('d-none');
-  document.getElementById('tabelaUsuarios').classList.remove('d-none');
-}
-
-carregarUsuarios();
-
-// ========== Controle de Inatividade ==========
-const TEMPO_MAXIMO_INATIVIDADE = 15 * 60 * 1000;
-let tempoUltimaAtividade = Date.now();
-
-function atualizarAtividade() {
-  tempoUltimaAtividade = Date.now();
-  localStorage.removeItem('logoutExecutado');
-}
-
-['click', 'mousemove', 'keydown', 'scroll', 'touchstart'].forEach(evento => {
-  window.addEventListener(evento, atualizarAtividade);
-});
-
-setInterval(() => {
-  if (Date.now() - tempoUltimaAtividade > TEMPO_MAXIMO_INATIVIDADE) {
-    if (!localStorage.getItem('logoutExecutado')) {
-      localStorage.setItem('logoutExecutado', 'true');
-      alert('Sessão expirada por inatividade.');
-      logout();
+    // Proteção de acesso
+    const nivel = localStorage.getItem('nivel');
+    if (nivel !== 'adm') {
+      alert('Acesso restrito.');
+      window.location.href = 'dashboard.html';
     }
-  }
-}, 30000);
-</script>
 
-</body>
-</html>
+    // =====================
+    // CARREGAR USUÁRIOS
+    // =====================
+    async function carregarUsuarios() {
+      const tbody = document.getElementById('corpoTabela');
+      tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">Carregando...</td></tr>';
+
+      const res = await fetch(`${API}/listar-usuarios`);
+      const usuarios = await res.json();
+
+      tbody.innerHTML = '';
+
+      if (!usuarios.length) {
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">Nenhum usuário encontrado.</td></tr>';
+        return;
+      }
+
+      usuarios.forEach(u => {
+        const statusBadge = u.ativo
+          ? '<span class="badge bg-success">Ativo</span>'
+          : '<span class="badge bg-secondary">Inativo</span>';
+
+        const nivelBadge = u.nivel === 'adm'
+          ? '<span class="badge bg-danger">Administrador</span>'
+          : '<span class="badge bg-primary">User</span>';
+
+        tbody.innerHTML += `
+          <tr>
+            <td>${u.nome || '-'}</td>
+            <td>${u.email || '-'}</td>
+            <td>${nivelBadge}</td>
+            <td>${statusBadge}</td>
+            <td>
+              <button class="btn btn-sm btn-primary me-1" onclick="abrirModalEditar('${u.id}', '${u.nome?.replace(/'/g,"\\'")}', '${u.email}', '${u.nivel}')" title="Editar">
+                <i class="bi bi-pencil"></i>
+              </button>
+              <button class="btn btn-sm btn-warning me-1" onclick="abrirModalSenha('${u.id}')" title="Trocar senha">
+                <i class="bi bi-key"></i>
+              </button>
+              <button class="btn btn-sm ${u.ativo ? 'btn-secondary' : 'btn-success'} me-1" onclick="alternarStatus('${u.id}', ${u.ativo})" title="${u.ativo ? 'Desativar' : 'Ativar'}">
+                <i class="bi bi-${u.ativo ? 'pause' : 'play'}"></i>
+              </button>
+              <button class="btn btn-sm btn-danger" onclick="excluirUsuario('${u.id}')" title="Excluir">
+                <i class="bi bi-trash"></i>
+              </button>
+            </td>
+          </tr>`;
+      });
+    }
+
+    // =====================
+    // NOVO USUÁRIO
+    // =====================
+    function abrirModalNovo() {
+      document.getElementById('formNovo').reset();
+      document.getElementById('alertNovo').classList.add('d-none');
+      new bootstrap.Modal(document.getElementById('modalNovo')).show();
+    }
+
+    document.getElementById('formNovo').addEventListener('submit', async e => {
+      e.preventDefault();
+      const alerta = document.getElementById('alertNovo');
+      alerta.classList.add('d-none');
+
+      const res = await fetch(`${API}/criar-usuario`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          nome: document.getElementById('novoNome').value,
+          email: document.getElementById('novoEmail').value,
+          senha: document.getElementById('novaSenha').value,
+          nivel: document.getElementById('novoNivel').value
+        })
+      });
+
+      if (res.ok) {
+        bootstrap.Modal.getInstance(document.getElementById('modalNovo')).hide();
+        carregarUsuarios();
+      } else {
+        const err = await res.json();
+        alerta.textContent = err.error || 'Erro ao criar usuário.';
+        alerta.className = 'alert alert-danger mt-2';
+      }
+    });
+
+    // =====================
+    // EDITAR
+    // =====================
+    function abrirModalEditar(id, nome, ema
