@@ -1,26 +1,22 @@
-html, body {
+html {
   height: 100%;
-  margin: 0;
 }
 
 body {
+  margin: 0;
   display: flex;
   font-family: 'Segoe UI', sans-serif;
   min-height: 100vh;
-  align-items: stretch;
 }
 
 .sidebar {
   width: 240px;
+  min-width: 240px;
   background-color: #0f172a;
   color: white;
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
-  position: sticky;
-  top: 0;
-  height: 100vh;
-  overflow-y: auto;
+  align-self: stretch;
 }
 
 .sidebar-header {
@@ -65,5 +61,5 @@ body {
   flex: 1;
   padding: 40px;
   background: #f4f6fa;
-  min-height: 100vh;
+  min-width: 0;
 }
