@@ -44,6 +44,11 @@
           <tbody id="tbody-aniversariantes"></tbody>
         </table>
       </div>
+      <div class="d-flex justify-content-between align-items-center mt-2">
+        <button class="btn btn-sm btn-secondary" id="btnAnteriorAniv" onclick="mudarPagina('aniv', -1)">Anterior</button>
+        <span id="paginaAniv" class="small text-muted"></span>
+        <button class="btn btn-sm btn-secondary" id="btnProximaAniv" onclick="mudarPagina('aniv', 1)">Próxima</button>
+      </div>
     </div>
 
     <!-- CUPONS VENCENDO NA SEMANA -->
@@ -64,6 +69,11 @@
           <tbody id="tbody-cupons"></tbody>
         </table>
       </div>
+      <div class="d-flex justify-content-between align-items-center mt-2">
+        <button class="btn btn-sm btn-secondary" id="btnAnteriorCupons" onclick="mudarPagina('cupons', -1)">Anterior</button>
+        <span id="paginaCupons" class="small text-muted"></span>
+        <button class="btn btn-sm btn-secondary" id="btnProximaCupons" onclick="mudarPagina('cupons', 1)">Próxima</button>
+      </div>
     </div>
 
   </div>
@@ -74,48 +84,33 @@
 
     const SUPABASE_URL = CONFIG.SUPABASE_URL;
     const SUPABASE_KEY = CONFIG.SUPABASE_ANON_KEY;
+    const LIMITE = 20;
 
     const headers = {
       apikey: SUPABASE_KEY,
       Authorization: `Bearer ${SUPABASE_KEY}`
     };
 
-    function toISO(date) {
-      return date.toISOString().split('T')[0];
-    }
+    // Dados completos em memória
+    let todosAniversariantes = [];
+    let todosCupons = [];
+    let paginaAniv = 1;
+    let paginaCupons = 1;
 
+    function toISO(date) { return date.toISOString().split('T')[0]; }
     function hoje() { return new Date(); }
-
-    function inicioMes() {
-      const d = hoje();
-      return new Date(d.getFullYear(), d.getMonth(), 1);
-    }
-
-    function fimMes() {
-      const d = hoje();
-      return new Date(d.getFullYear(), d.getMonth() + 1, 0);
-    }
-
-    function inicioSemana() {
-      const d = hoje();
-      d.setHours(0,0,0,0);
-      return d;
-    }
 
     function fimSemana() {
       const d = hoje();
       d.setDate(d.getDate() + 6);
-      d.setHours(23,59,59,999);
       return d;
-    }
-
-    function isHoje(dateStr) {
-      return dateStr === toISO(hoje());
     }
 
     function isEstaSemana(dateStr) {
       const d = new Date(dateStr);
-      return d >= inicioSemana() && d <= fimSemana();
+      const ini = hoje(); ini.setHours(0,0,0,0);
+      const fim = fimSemana(); fim.setHours(23,59,59,999);
+      return d >= ini && d <= fim;
     }
 
     function formatarData(iso) {
@@ -133,129 +128,128 @@
       </a>`;
     }
 
-    // =====================
-    // ANIVERSARIANTES DO MÊS
-    // =====================
+    function renderizarPagina(tipo) {
+      if (tipo === 'aniv') {
+        const dados = todosAniversariantes;
+        const pagina = paginaAniv;
+        const total = Math.ceil(dados.length / LIMITE) || 1;
+        const slice = dados.slice((pagina - 1) * LIMITE, pagina * LIMITE);
+        const anoAtual = hoje().getFullYear();
+        const tbody = document.getElementById('tbody-aniversariantes');
+        tbody.innerHTML = '';
+
+        if (!slice.length) {
+          tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">Nenhum aniversariante este mês.</td></tr>';
+        } else {
+          slice.forEach(c => {
+            const anivEsteAno = `${anoAtual}-${c.data_nascimento.slice(5, 10)}`;
+            const estaSemanaBool = isEstaSemana(anivEsteAno);
+            const rowClass = estaSemanaBool ? 'table-warning' : '';
+            const msg = `Olá ${c.nome?.split(' ')[0]}! 🎂 A equipe Smash do Cabo deseja um feliz aniversário! Esperamos te ver em breve 🍔`;
+            tbody.innerHTML += `
+              <tr class="${rowClass}">
+                <td>${c.nome || '-'} ${estaSemanaBool ? '<span class="badge bg-warning text-dark ms-1">Esta semana</span>' : ''}</td>
+                <td>${c.telefone || '-'}</td>
+                <td>${formatarData(c.data_nascimento)}</td>
+                <td>${btnWhatsApp(c.telefone, msg)}</td>
+              </tr>`;
+          });
+        }
+
+        document.getElementById('paginaAniv').textContent = `Página ${pagina} de ${total}`;
+        document.getElementById('btnAnteriorAniv').disabled = pagina === 1;
+        document.getElementById('btnProximaAniv').disabled = pagina >= total;
+
+      } else {
+        const dados = todosCupons;
+        const pagina = paginaCupons;
+        const total = Math.ceil(dados.length / LIMITE) || 1;
+        const slice = dados.slice((pagina - 1) * LIMITE, pagina * LIMITE);
+        const hojeISO = toISO(hoje());
+        const tbody = document.getElementById('tbody-cupons');
+        tbody.innerHTML = '';
+
+        if (!slice.length) {
+          tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">Nenhum cupom vencendo essa semana.</td></tr>';
+        } else {
+          slice.forEach(c => {
+            const venceHoje = c.valido_ate === hojeISO;
+            const rowClass = venceHoje ? 'table-danger' : '';
+            const msg = `Olá ${c.cliente_nome?.split(' ')[0]}! 🎟️ Seu cupom da Smash do Cabo vence ${venceHoje ? 'HOJE' : 'em breve'}! Não esqueça de usar: *${c.codigo}* 🍔`;
+            tbody.innerHTML += `
+              <tr class="${rowClass}">
+                <td>${c.cliente_nome || '-'} ${venceHoje ? '<span class="badge bg-danger ms-1">Vence hoje</span>' : ''}</td>
+                <td>${c.cliente_telefone || '-'}</td>
+                <td><code>${c.codigo}</code></td>
+                <td>${formatarData(c.valido_ate)}</td>
+                <td>${btnWhatsApp(c.cliente_telefone, msg)}</td>
+              </tr>`;
+          });
+        }
+
+        document.getElementById('paginaCupons').textContent = `Página ${pagina} de ${total}`;
+        document.getElementById('btnAnteriorCupons').disabled = pagina === 1;
+        document.getElementById('btnProximaCupons').disabled = pagina >= total;
+      }
+    }
+
+    function mudarPagina(tipo, direcao) {
+      if (tipo === 'aniv') {
+        const total = Math.ceil(todosAniversariantes.length / LIMITE) || 1;
+        paginaAniv = Math.min(Math.max(paginaAniv + direcao, 1), total);
+      } else {
+        const total = Math.ceil(todosCupons.length / LIMITE) || 1;
+        paginaCupons = Math.min(Math.max(paginaCupons + direcao, 1), total);
+      }
+      renderizarPagina(tipo);
+    }
+
     async function carregarAniversariantes() {
       const mesAtual = String(hoje().getMonth() + 1).padStart(2, '0');
-
       const res = await fetch(
         `${SUPABASE_URL}/rest/v1/feedback_detalhado?select=nome,telefone,data_nascimento&data_nascimento=not.is.null`,
         { headers }
       );
       const dados = await res.json();
 
-      // Filtra quem tem aniversário neste mês
-      const aniversariantes = dados.filter(c => {
-        if (!c.data_nascimento) return false;
-        const mes = c.data_nascimento.slice(5, 7);
-        return mes === mesAtual;
-      });
-
-      // Ordena pelo dia
-      aniversariantes.sort((a, b) => {
-        const diaA = parseInt(a.data_nascimento.slice(8, 10));
-        const diaB = parseInt(b.data_nascimento.slice(8, 10));
-        return diaA - diaB;
-      });
+      todosAniversariantes = dados
+        .filter(c => c.data_nascimento?.slice(5, 7) === mesAtual)
+        .sort((a, b) => parseInt(a.data_nascimento.slice(8,10)) - parseInt(b.data_nascimento.slice(8,10)));
 
       document.getElementById('resumoAniversariantes').textContent =
-        `${aniversariantes.length} aniversariante(s) este mês`;
+        `${todosAniversariantes.length} aniversariante(s) este mês`;
 
-      const tbody = document.getElementById('tbody-aniversariantes');
-      tbody.innerHTML = '';
-
-      if (!aniversariantes.length) {
-        tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">Nenhum aniversariante este mês.</td></tr>';
-        return;
-      }
-
-      const anoAtual = hoje().getFullYear();
-
-      aniversariantes.forEach(c => {
-        // Monta a data com o ano atual para checar se é essa semana
-        const anivEsteAno = `${anoAtual}-${c.data_nascimento.slice(5, 10)}`;
-        const estaSemanaBool = isEstaSemana(anivEsteAno);
-        const rowClass = estaSemanaBool ? 'table-warning' : '';
-
-        const msg = `Olá ${c.nome?.split(' ')[0]}! 🎂 A equipe Smash do Cabo deseja um feliz aniversário! Esperamos te ver em breve 🍔`;
-
-        tbody.innerHTML += `
-          <tr class="${rowClass}">
-            <td>${c.nome || '-'} ${estaSemanaBool ? '<span class="badge bg-warning text-dark ms-1">Esta semana</span>' : ''}</td>
-            <td>${c.telefone || '-'}</td>
-            <td>${formatarData(c.data_nascimento)}</td>
-            <td>${btnWhatsApp(c.telefone, msg)}</td>
-          </tr>
-        `;
-      });
+      paginaAniv = 1;
+      renderizarPagina('aniv');
     }
 
-    // =====================
-    // CUPONS VENCENDO NA SEMANA
-    // =====================
     async function carregarCupons() {
-      const ini = toISO(inicioSemana());
+      const ini = toISO(hoje());
       const fim = toISO(fimSemana());
-      const hojeISO = toISO(hoje());
-
       const res = await fetch(
         `${SUPABASE_URL}/rest/v1/cupons?select=codigo,cliente_nome,cliente_telefone,valido_ate,utilizado&valido_ate=gte.${ini}&valido_ate=lte.${fim}&utilizado=is.false&order=valido_ate.asc`,
         { headers }
       );
-      const dados = await res.json();
+      todosCupons = await res.json();
 
       document.getElementById('resumoCupons').textContent =
-        `${dados.length} cupom(ns) vencendo essa semana`;
+        `${todosCupons.length} cupom(ns) vencendo essa semana`;
 
-      const tbody = document.getElementById('tbody-cupons');
-      tbody.innerHTML = '';
-
-      if (!dados.length) {
-        tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">Nenhum cupom vencendo essa semana.</td></tr>';
-        return;
-      }
-
-      dados.forEach(c => {
-        const venceHoje = c.valido_ate === hojeISO;
-        const rowClass = venceHoje ? 'table-danger' : '';
-
-        const msg = `Olá ${c.cliente_nome?.split(' ')[0]}! 🎟️ Seu cupom da Smash do Cabo vence ${venceHoje ? 'HOJE' : 'em breve'}! Não esqueça de usar: *${c.codigo}* 🍔`;
-
-        tbody.innerHTML += `
-          <tr class="${rowClass}">
-            <td>${c.cliente_nome || '-'} ${venceHoje ? '<span class="badge bg-danger ms-1">Vence hoje</span>' : ''}</td>
-            <td>${c.cliente_telefone || '-'}</td>
-            <td><code>${c.codigo}</code></td>
-            <td>${formatarData(c.valido_ate)}</td>
-            <td>${btnWhatsApp(c.cliente_telefone, msg)}</td>
-          </tr>
-        `;
-      });
+      paginaCupons = 1;
+      renderizarPagina('cupons');
     }
 
-    // =====================
-    // EXPORTAR
-    // =====================
     function exportarPDF() {
-      html2pdf().from(document.querySelector('.conteudo')).set({
-        filename: 'relatorio-smash.pdf',
-        margin: 10
-      }).save();
+      html2pdf().from(document.querySelector('.conteudo')).set({ filename: 'relatorio-smash.pdf', margin: 10 }).save();
     }
 
     function exportarExcel() {
       const wb = XLSX.utils.book_new();
-      const tabAniv = document.getElementById('tabela-aniversariantes');
-      const tabCupons = document.getElementById('tabela-cupons');
-      XLSX.utils.book_append_sheet(wb, XLSX.utils.table_to_sheet(tabAniv), 'Aniversariantes');
-      XLSX.utils.book_append_sheet(wb, XLSX.utils.table_to_sheet(tabCupons), 'Cupons');
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.table_to_sheet(document.getElementById('tabela-aniversariantes')), 'Aniversariantes');
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.table_to_sheet(document.getElementById('tabela-cupons')), 'Cupons');
       XLSX.writeFile(wb, 'relatorio-smash.xlsx');
     }
 
-    // =====================
-    // INIT
-    // =====================
     const meses = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
     document.getElementById('tituloRelatorio').textContent =
       `Relatórios — ${meses[hoje().getMonth()]} ${hoje().getFullYear()}`;
