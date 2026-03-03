@@ -17,6 +17,47 @@
       <h3>Clientes</h3>
     </div>
 
+    <!-- FILTROS -->
+    <div class="card p-3 mb-3">
+      <div class="row g-2 align-items-end">
+
+        <div class="col-md-2">
+          <label class="form-label mb-1">Mês</label>
+          <select id="filtroMes" class="form-select">
+            <option value="1">Janeiro</option>
+            <option value="2">Fevereiro</option>
+            <option value="3">Março</option>
+            <option value="4">Abril</option>
+            <option value="5">Maio</option>
+            <option value="6">Junho</option>
+            <option value="7">Julho</option>
+            <option value="8">Agosto</option>
+            <option value="9">Setembro</option>
+            <option value="10">Outubro</option>
+            <option value="11">Novembro</option>
+            <option value="12">Dezembro</option>
+          </select>
+        </div>
+
+        <div class="col-md-2">
+          <label class="form-label mb-1">Ano</label>
+          <select id="filtroAno" class="form-select"></select>
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label mb-1">Buscar nome</label>
+          <input type="text" id="buscarNome" class="form-control" placeholder="Nome do cliente">
+        </div>
+
+        <div class="col-md-2">
+          <button onclick="aplicarFiltro()" class="btn btn-primary w-100">Filtrar</button>
+        </div>
+
+      </div>
+    </div>
+
+    <div id="resumoLinha" class="mb-2 fw-bold text-muted small"></div>
+
     <div class="card p-3">
       <div class="table-responsive">
         <table class="table table-striped table-sm">
@@ -34,15 +75,53 @@
         </table>
       </div>
     </div>
+
+    <!-- PAGINAÇÃO -->
+    <div class="d-flex justify-content-between align-items-center mt-3">
+      <button class="btn btn-secondary" id="btnAnterior" onclick="mudarPagina(-1)">Anterior</button>
+      <span id="paginaAtual"></span>
+      <button class="btn btn-secondary" id="btnProxima" onclick="mudarPagina(1)">Próxima</button>
+    </div>
+
   </div>
 
   <script src="config.js"></script>
   <script src="sidebar.js"></script>
   <script>
-    async function carregarClientes() {
+    const LIMITE = 30;
+    let pagina = 1;
+    let dadosAtuais = [];
+
+    // Preenche o select de anos (últimos 3 anos)
+    function preencherAnos() {
+      const anoAtual = new Date().getFullYear();
+      const sel = document.getElementById('filtroAno');
+      for (let a = anoAtual; a >= anoAtual - 2; a--) {
+        const opt = document.createElement('option');
+        opt.value = a;
+        opt.textContent = a;
+        sel.appendChild(opt);
+      }
+    }
+
+    // Define mês/ano atual como padrão
+    function definirMesAtual() {
+      const hoje = new Date();
+      document.getElementById('filtroMes').value = hoje.getMonth() + 1;
+      document.getElementById('filtroAno').value = hoje.getFullYear();
+    }
+
+    async function aplicarFiltro() {
+      const mes = document.getElementById('filtroMes').value.padStart(2, '0');
+      const ano = document.getElementById('filtroAno').value;
+      const nome = document.getElementById('buscarNome').value.trim().toLowerCase();
+
+      const inicio = `${ano}-${mes}-01`;
+      const fim = new Date(ano, mes, 1).toISOString().split('T')[0]; // primeiro dia do próximo mês
+
       try {
         const res = await fetch(
-          `${CONFIG.SUPABASE_URL}/rest/v1/feedback_detalhado?select=id,nome,email,telefone,data_nascimento,created_at`,
+          `${CONFIG.SUPABASE_URL}/rest/v1/feedback_detalhado?select=id,nome,email,telefone,data_nascimento,created_at&created_at=gte.${inicio}&created_at=lt.${fim}&order=created_at.desc`,
           {
             headers: {
               apikey: CONFIG.SUPABASE_ANON_KEY,
@@ -51,41 +130,72 @@
           }
         );
 
-        if (!res.ok) {
-          console.error("Erro na requisição:", await res.json());
-          return;
+        let dados = await res.json();
+
+        if (nome) {
+          dados = dados.filter(d => d.nome?.toLowerCase().includes(nome));
         }
 
-        const dados = await res.json();
-        const tbody = document.getElementById('tabelaClientes');
-        tbody.innerHTML = '';
-
-        dados.forEach(cli => {
-          const tr = document.createElement('tr');
-          tr.innerHTML = `
-            <td>${cli.nome || '-'}</td>
-            <td>${cli.email || '-'}</td>
-            <td>${cli.telefone || '-'}</td>
-            <td>${cli.data_nascimento || '-'}</td>
-            <td>${new Date(cli.created_at).toLocaleDateString('pt-BR')}</td>
-            <td>
-              <button onclick="editarCliente(${cli.id})" class="btn btn-sm btn-primary me-1" title="Editar">
-                <i class="bi bi-pencil"></i>
-              </button>
-              <a href="https://wa.me/55${cli.telefone?.replace(/[^0-9]/g, '')}" target="_blank" class="btn btn-sm btn-success me-1" title="WhatsApp">
-                <i class="bi bi-whatsapp"></i>
-              </a>
-              <button onclick="excluirCliente(${cli.id})" class="btn btn-sm btn-danger" title="Excluir">
-                <i class="bi bi-trash"></i>
-              </button>
-            </td>
-          `;
-          tbody.appendChild(tr);
-        });
+        dadosAtuais = dados;
+        pagina = 1;
+        renderizar();
 
       } catch (err) {
         console.error("Erro ao carregar clientes:", err);
       }
+    }
+
+    function renderizar() {
+      const tbody = document.getElementById('tabelaClientes');
+      tbody.innerHTML = '';
+
+      const inicio = (pagina - 1) * LIMITE;
+      const fim = inicio + LIMITE;
+      const pageDados = dadosAtuais.slice(inicio, fim);
+      const totalPaginas = Math.ceil(dadosAtuais.length / LIMITE) || 1;
+
+      document.getElementById('resumoLinha').textContent =
+        `${dadosAtuais.length} cliente(s) encontrado(s)`;
+
+      document.getElementById('paginaAtual').textContent =
+        `Página ${pagina} de ${totalPaginas}`;
+
+      document.getElementById('btnAnterior').disabled = pagina === 1;
+      document.getElementById('btnProxima').disabled = pagina >= totalPaginas;
+
+      if (pageDados.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">Nenhum cliente encontrado.</td></tr>';
+        return;
+      }
+
+      pageDados.forEach(cli => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${cli.nome || '-'}</td>
+          <td>${cli.email || '-'}</td>
+          <td>${cli.telefone || '-'}</td>
+          <td>${cli.data_nascimento || '-'}</td>
+          <td>${new Date(cli.created_at).toLocaleDateString('pt-BR')}</td>
+          <td>
+            <button onclick="editarCliente(${cli.id})" class="btn btn-sm btn-primary me-1" title="Editar">
+              <i class="bi bi-pencil"></i>
+            </button>
+            <a href="https://wa.me/55${cli.telefone?.replace(/[^0-9]/g, '')}" target="_blank" class="btn btn-sm btn-success me-1" title="WhatsApp">
+              <i class="bi bi-whatsapp"></i>
+            </a>
+            <button onclick="excluirCliente(${cli.id})" class="btn btn-sm btn-danger" title="Excluir">
+              <i class="bi bi-trash"></i>
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function mudarPagina(direcao) {
+      const totalPaginas = Math.ceil(dadosAtuais.length / LIMITE) || 1;
+      pagina = Math.min(Math.max(pagina + direcao, 1), totalPaginas);
+      renderizar();
     }
 
     function editarCliente(id) {
@@ -108,14 +218,16 @@
 
       if (res.ok) {
         alert("Cliente excluído com sucesso.");
-        carregarClientes();
+        aplicarFiltro();
       } else {
-        console.error("Erro ao excluir:", await res.json());
         alert("Erro ao excluir cliente.");
       }
     }
 
-    carregarClientes();
+    // Inicializa
+    preencherAnos();
+    definirMesAtual();
+    aplicarFiltro();
   </script>
 
 </body>
