@@ -119,3 +119,27 @@ button[type="submit"] {
   font-size: 12px;
   color: #777;
 }
+.brinde-box{
+background:#fff3e6;
+border:2px solid #ff7a00;
+padding:18px;
+border-radius:10px;
+margin:20px 0 30px 0;
+text-align:center;
+}
+
+.brinde-box h3{
+margin:0 0 8px 0;
+font-size:20px;
+color:#ff7a00;
+}
+
+.brinde-box p{
+margin:0 0 8px 0;
+font-size:15px;
+}
+
+.regras{
+font-size:12px;
+color:#666;
+}
