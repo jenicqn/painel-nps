@@ -10,6 +10,14 @@ const SUPABASE_ANON_KEY = CONFIG.SUPABASE_ANON_KEY;
 /* ======================================================= */
 /* ======================================================= */
 
+// 🔐 TOKEN DO USUÁRIO
+async function getToken() {
+  const { data } = await supabaseClient.auth.getSession();
+  return data.session?.access_token;
+}
+
+/* ================= UTIL ================= */
+
 function formatarDataLocal(data) {
   const ano = data.getFullYear();
   const mes = String(data.getMonth() + 1).padStart(2, '0');
@@ -25,6 +33,8 @@ function nomeMesAtual() {
   const hoje = new Date();
   return meses[hoje.getMonth()];
 }
+
+/* ================= DASHBOARD ================= */
 
 async function carregarDashboard() {
 
@@ -43,14 +53,24 @@ async function carregarDashboard() {
     &created_at=lt.${dataFim}
   `.replace(/\s+/g,'');
 
+  const token = await getToken();
+
+  if (!token) {
+    alert("Sessão expirada. Faça login novamente.");
+    window.location.href = "index.html";
+    return;
+  }
+
   const res = await fetch(query, {
     headers: {
       apikey: SUPABASE_ANON_KEY,
-      Authorization: `Bearer ${SUPABASE_ANON_KEY}`
+      Authorization: `Bearer ${token}`
     }
   });
 
   const dados = await res.json();
+
+  console.log("DADOS DASHBOARD:", dados); // debug
 
   atualizarKPIs(dados);
 
@@ -58,6 +78,8 @@ async function carregarDashboard() {
 
   carregarRespostasHoje();
 }
+
+/* ================= NPS ================= */
 
 function calcularNPS(lista) {
   let promotores = 0;
@@ -75,16 +97,18 @@ function calcularNPS(lista) {
     : 0;
 }
 
+/* ================= KPIs ================= */
+
 function atualizarKPIs(dados) {
 
   const total = dados.length;
 
   const moradores = dados.filter(d =>
-    String(d.morador).toLowerCase().includes("morador")
+    String(d.morador || "").toLowerCase().includes("morador")
   );
 
   const turistas = dados.filter(d =>
-    String(d.morador).toLowerCase().includes("turista")
+    String(d.morador || "").toLowerCase().includes("turista")
   );
 
   const totalMoradores = moradores.length;
@@ -111,6 +135,8 @@ function atualizarKPIs(dados) {
   document.getElementById('totalTuristas').textContent = totalTuristas;
 }
 
+/* ================= HOJE ================= */
+
 async function carregarRespostasHoje() {
 
   const hoje = new Date();
@@ -130,10 +156,12 @@ async function carregarRespostasHoje() {
     &limit=5
   `.replace(/\s+/g,'');
 
+  const token = await getToken();
+
   const res = await fetch(query, {
     headers: {
       apikey: SUPABASE_ANON_KEY,
-      Authorization: `Bearer ${SUPABASE_ANON_KEY}`
+      Authorization: `Bearer ${token}`
     }
   });
 
@@ -151,5 +179,7 @@ async function carregarRespostasHoje() {
     `;
   });
 }
+
+/* ================= INIT ================= */
 
 document.addEventListener("DOMContentLoaded", carregarDashboard);
