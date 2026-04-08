@@ -26,50 +26,29 @@
     </div>
   </div>
 
-  <!-- (SEU HTML NÃO MUDA, OMITIDO PRA FOCO NA CORREÇÃO JS) -->
+  <!-- conteúdo mantido -->
 
 </div>
 
-<!-- 🔥 ORDEM CORRETA -->
+<!-- SCRIPTS -->
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <script src="config.js"></script>
 <script src="sidebar.js"></script>
 
 <script>
 
+/* ======================================================= */
+
 const SUPABASE_URL = CONFIG.SUPABASE_URL;
 const SUPABASE_ANON_KEY = CONFIG.SUPABASE_ANON_KEY;
 const LIMITE = 20;
 
-// 🔐 TOKEN
+/* ================= TOKEN ================= */
+
 async function getToken() {
   const { data } = await supabaseClient.auth.getSession();
   return data.session?.access_token;
 }
-
-let todosAniversariantes = [];
-let todosCupons = [];
-let anivFiltrados = [];
-let cuponsFiltrados = [];
-let paginaAniv = 1;
-let paginaCupons = 1;
-
-/* ===================== HELPERS ===================== */
-
-function toISO(date) { return date.toISOString().split('T')[0]; }
-function hoje() { return new Date(); }
-
-function formatarData(iso) {
-  if (!iso) return '-';
-  const [y,m,d] = iso.split('-');
-  return `${d}/${m}/${y}`;
-}
-
-function isMorador(valor) {
-  return String(valor || '').toLowerCase().includes('morador');
-}
-
-/* ===================== FETCH COM TOKEN ===================== */
 
 async function fetchComAuth(url) {
 
@@ -91,7 +70,59 @@ async function fetchComAuth(url) {
   return await res.json();
 }
 
-/* ===================== ANIVERSARIANTES ===================== */
+/* ================= HELPERS ================= */
+
+function toISO(date) {
+  return date.toISOString().split('T')[0];
+}
+
+function hoje() {
+  return new Date();
+}
+
+function formatarData(iso) {
+  if (!iso) return '-';
+  const [y,m,d] = iso.split('-');
+  return `${d}/${m}/${y}`;
+}
+
+function isMorador(valor) {
+  return String(valor || '').toLowerCase().includes('morador');
+}
+
+/* ================= FILTROS ================= */
+
+function inicializarFiltros() {
+
+  const h = hoje();
+
+  document.getElementById('anivMes').value = h.getMonth() + 1;
+
+  const selAno = document.getElementById('anivAno');
+  selAno.innerHTML = "";
+
+  for (let a = h.getFullYear(); a >= h.getFullYear() - 2; a--) {
+    const opt = document.createElement('option');
+    opt.value = a;
+    opt.textContent = a;
+    selAno.appendChild(opt);
+  }
+
+  selAno.value = h.getFullYear();
+
+  const inicioMes = new Date(h.getFullYear(), h.getMonth(), 1);
+  const fimMes = new Date(h.getFullYear(), h.getMonth() + 1, 0);
+
+  document.getElementById('cuponsDataInicio').value = toISO(inicioMes);
+  document.getElementById('cuponsDataFim').value = toISO(fimMes);
+}
+
+/* ================= VARIÁVEIS ================= */
+
+let todosAniversariantes = [];
+let todosCupons = [];
+
+/* ================= ANIVERSARIANTES ================= */
 
 async function carregarAniversariantes() {
 
@@ -102,13 +133,12 @@ async function carregarAniversariantes() {
   );
 
   todosAniversariantes = dados
-    .filter(c => c.data_nascimento?.slice(5,7) === mes)
-    .sort((a,b) => parseInt(a.data_nascimento.slice(8,10)) - parseInt(b.data_nascimento.slice(8,10)));
+    .filter(c => c.data_nascimento?.slice(5,7) === mes);
 
-  aplicarFiltroAniv();
+  console.log("ANIVERSARIANTES:", todosAniversariantes);
 }
 
-/* ===================== CUPONS ===================== */
+/* ================= CUPONS ================= */
 
 async function carregarCupons() {
 
@@ -116,42 +146,24 @@ async function carregarCupons() {
   const fim = document.getElementById('cuponsDataFim').value;
 
   const cupons = await fetchComAuth(
-    `${SUPABASE_URL}/rest/v1/cupons?select=codigo,cliente_nome,cliente_telefone,valido_ate&valido_ate=gte.${ini}&valido_ate=lte.${fim}&utilizado=is.false&order=valido_ate.asc`
+    `${SUPABASE_URL}/rest/v1/cupons?select=codigo,cliente_nome,cliente_telefone,valido_ate&valido_ate=gte.${ini}&valido_ate=lte.${fim}&utilizado=is.false`
   );
 
-  if (!cupons.length) {
-    todosCupons = [];
-    aplicarFiltroCupons();
-    return;
-  }
-
-  const telefones = [...new Set(cupons.map(c => c.cliente_telefone).filter(Boolean))];
-
-  const feedbacks = await fetchComAuth(
-    `${SUPABASE_URL}/rest/v1/feedback_detalhado?select=telefone,morador&telefone=in.(${telefones.map(t => `"${t}"`).join(',')})`
-  );
-
-  const moradorMap = {};
-  feedbacks.forEach(f => {
-    if (f.telefone) moradorMap[f.telefone.trim()] = f.morador;
-  });
-
-  todosCupons = cupons.map(c => ({
-    ...c,
-    morador: moradorMap[c.cliente_telefone?.trim()] || ''
-  }));
-
-  aplicarFiltroCupons();
+  console.log("CUPONS:", cupons);
 }
 
-/* ===================== RESTO (SEM MUDANÇA) ===================== */
+/* ================= EXPORT ================= */
 
-/* manter tudo igual:
-- renderizarAniv
-- renderizarCupons
-- filtros
-- exportações
-*/
+function exportarPDF() {
+  html2pdf().from(document.querySelector('.conteudo')).save('relatorio.pdf');
+}
+
+function exportarExcel() {
+  const wb = XLSX.utils.book_new();
+  XLSX.writeFile(wb, 'relatorio.xlsx');
+}
+
+/* ================= INIT ================= */
 
 const meses = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
 
