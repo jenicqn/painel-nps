@@ -4,7 +4,7 @@ const CONFIG = {
 };
 
 // 🔐 CLIENT SUPABASE (CORRETO)
-const supabase = window.supabase.createClient(
+cconst supabase = supabase.createClient(
   CONFIG.SUPABASE_URL,
   CONFIG.SUPABASE_ANON_KEY,
   {
