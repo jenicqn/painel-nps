@@ -112,9 +112,22 @@
 <script src="dashboard.js"></script>
 
 <script>
-const usuario = JSON.parse(localStorage.getItem("usuario"));
-if (!usuario) window.location.href = "index.html";
-document.getElementById("nomeUsuario").textContent = usuario.nome || "Usuário";
+async function verificarSessao() {
+
+  const { data } = await supabaseClient.auth.getSession();
+
+  if (!data.session) {
+    window.location.href = "index.html";
+    return;
+  }
+
+  // opcional: mostrar nome
+  const usuario = JSON.parse(localStorage.getItem("usuario"));
+  document.getElementById("nomeUsuario").textContent =
+    usuario?.nome || "Usuário";
+}
+
+verificarSessao();
 </script>
 
 </body>
