@@ -8,6 +8,12 @@ const SUPABASE_ANON_KEY = CONFIG.SUPABASE_ANON_KEY;
 /* ======================================================= */
 /* ======================================================= */
 
+// 🔐 ADICIONADO
+async function getToken() {
+  const { data } = await supabaseClient.auth.getSession();
+  return data.session?.access_token;
+}
+
 let graficoEvolucao;
 let graficoDistribuicao;
 let graficoSegmento;
@@ -45,10 +51,19 @@ async function buscarDados() {
   if (dataInicio) query += `&created_at=gte.${dataInicio}`;
   if (dataFim) query += `&created_at=lte.${dataFim}`;
 
+  // 🔐 TOKEN DO USUÁRIO (NOVO)
+  const token = await getToken();
+
+  if (!token) {
+    alert("Sessão expirada. Faça login novamente.");
+    window.location.href = "index.html";
+    return;
+  }
+
   const res = await fetch(query, {
     headers: {
       apikey: SUPABASE_ANON_KEY,
-      Authorization: `Bearer ${SUPABASE_ANON_KEY}`
+      Authorization: `Bearer ${token}`
     }
   });
 
