@@ -11,7 +11,7 @@ const SUPABASE_ANON_KEY = CONFIG.SUPABASE_ANON_KEY;
 
 // 🔐 FUNÇÃO PARA PEGAR TOKEN DA SESSÃO (ADICIONADO)
 async function getToken() {
-  const { data } = await supabase.auth.getSession();
+  const { data } = await supabaseClient.auth.getSession();
   return data.session?.access_token;
 }
 
