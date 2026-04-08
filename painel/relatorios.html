@@ -3,381 +3,166 @@
 <head>
   <meta charset="UTF-8">
   <title>Relatórios - Smash do Cabo</title>
+
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
   <link rel="stylesheet" href="layout.css">
 </head>
+
 <body>
 
-  <div id="sidebar-container"></div>
+<div id="sidebar-container"></div>
 
-  <div class="conteudo">
+<div class="conteudo">
 
-    <div class="topbar d-flex justify-content-between align-items-center mb-4">
-      <h3 id="tituloRelatorio">Relatórios</h3>
-      <div class="d-flex gap-2">
-        <button class="btn btn-sm btn-danger" onclick="exportarPDF()">
-          <i class="bi bi-file-pdf"></i> PDF
-        </button>
-        <button class="btn btn-sm btn-success" onclick="exportarExcel()">
-          <i class="bi bi-file-excel"></i> Excel
-        </button>
-      </div>
+  <div class="topbar d-flex justify-content-between align-items-center mb-4">
+    <h3 id="tituloRelatorio">Relatórios</h3>
+    <div class="d-flex gap-2">
+      <button class="btn btn-sm btn-danger" onclick="exportarPDF()">PDF</button>
+      <button class="btn btn-sm btn-success" onclick="exportarExcel()">Excel</button>
     </div>
-
-    <!-- ANIVERSARIANTES DO MÊS -->
-    <div class="card p-3 mb-4">
-      <div class="d-flex justify-content-between align-items-center mb-3">
-        <h5 class="mb-0">🎂 Aniversariantes</h5>
-        <div class="form-check form-switch mb-0">
-          <input class="form-check-input" type="checkbox" id="filtroMoradorAniv" checked onchange="aplicarFiltroAniv()">
-          <label class="form-check-label small" for="filtroMoradorAniv">Só moradores</label>
-        </div>
-      </div>
-
-      <!-- Filtro de data aniversariantes -->
-      <div class="row g-2 align-items-end mb-3">
-        <div class="col-auto">
-          <label class="form-label mb-1 small">Mês</label>
-          <select id="anivMes" class="form-select form-select-sm">
-            <option value="1">Janeiro</option><option value="2">Fevereiro</option>
-            <option value="3">Março</option><option value="4">Abril</option>
-            <option value="5">Maio</option><option value="6">Junho</option>
-            <option value="7">Julho</option><option value="8">Agosto</option>
-            <option value="9">Setembro</option><option value="10">Outubro</option>
-            <option value="11">Novembro</option><option value="12">Dezembro</option>
-          </select>
-        </div>
-        <div class="col-auto">
-          <label class="form-label mb-1 small">Ano</label>
-          <select id="anivAno" class="form-select form-select-sm"></select>
-        </div>
-        <div class="col-auto">
-          <button class="btn btn-sm btn-primary" onclick="carregarAniversariantes()">Filtrar</button>
-        </div>
-      </div>
-
-      <div id="resumoAniversariantes" class="text-muted small mb-2"></div>
-      <div class="table-responsive">
-        <table class="table table-sm" id="tabela-aniversariantes">
-          <thead class="table-light">
-            <tr>
-              <th>Nome</th><th>Telefone</th><th>Nascimento</th><th>WhatsApp</th>
-            </tr>
-          </thead>
-          <tbody id="tbody-aniversariantes"></tbody>
-        </table>
-      </div>
-      <div class="d-flex justify-content-between align-items-center mt-2">
-        <button class="btn btn-sm btn-secondary" id="btnAnteriorAniv" onclick="mudarPagina('aniv', -1)">Anterior</button>
-        <span id="paginaAniv" class="small text-muted"></span>
-        <button class="btn btn-sm btn-secondary" id="btnProximaAniv" onclick="mudarPagina('aniv', 1)">Próxima</button>
-      </div>
-    </div>
-
-    <!-- CUPONS VENCENDO -->
-    <div class="card p-3 mb-4">
-      <div class="d-flex justify-content-between align-items-center mb-3">
-        <h5 class="mb-0">🎟️ Cupons Vencendo</h5>
-        <div class="form-check form-switch mb-0">
-          <input class="form-check-input" type="checkbox" id="filtroMoradorCupons" checked onchange="aplicarFiltroCupons()">
-          <label class="form-check-label small" for="filtroMoradorCupons">Só moradores</label>
-        </div>
-      </div>
-
-      <!-- Filtro de data cupons -->
-      <div class="row g-2 align-items-end mb-3">
-        <div class="col-auto">
-          <label class="form-label mb-1 small">De</label>
-          <input type="date" id="cuponsDataInicio" class="form-control form-control-sm">
-        </div>
-        <div class="col-auto">
-          <label class="form-label mb-1 small">Até</label>
-          <input type="date" id="cuponsDataFim" class="form-control form-control-sm">
-        </div>
-        <div class="col-auto">
-          <button class="btn btn-sm btn-primary" onclick="carregarCupons()">Filtrar</button>
-        </div>
-      </div>
-
-      <div id="resumoCupons" class="text-muted small mb-2"></div>
-      <div class="table-responsive">
-        <table class="table table-sm" id="tabela-cupons">
-          <thead class="table-light">
-            <tr>
-              <th>Cliente</th><th>Telefone</th><th>Código</th><th>Validade</th><th>WhatsApp</th>
-            </tr>
-          </thead>
-          <tbody id="tbody-cupons"></tbody>
-        </table>
-      </div>
-      <div class="d-flex justify-content-between align-items-center mt-2">
-        <button class="btn btn-sm btn-secondary" id="btnAnteriorCupons" onclick="mudarPagina('cupons', -1)">Anterior</button>
-        <span id="paginaCupons" class="small text-muted"></span>
-        <button class="btn btn-sm btn-secondary" id="btnProximaCupons" onclick="mudarPagina('cupons', 1)">Próxima</button>
-      </div>
-    </div>
-
   </div>
 
-  <script src="config.js"></script>
-  <script src="sidebar.js"></script>
-  <script>
+  <!-- (SEU HTML NÃO MUDA, OMITIDO PRA FOCO NA CORREÇÃO JS) -->
 
-    const SUPABASE_URL = CONFIG.SUPABASE_URL;
-    const SUPABASE_KEY = CONFIG.SUPABASE_ANON_KEY;
-    const LIMITE = 20;
+</div>
 
-    const headers = {
-      apikey: SUPABASE_KEY,
-      Authorization: `Bearer ${SUPABASE_KEY}`
-    };
+<!-- 🔥 ORDEM CORRETA -->
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script src="sidebar.js"></script>
 
-    let todosAniversariantes = [];
-    let todosCupons = [];
-    let anivFiltrados = [];
-    let cuponsFiltrados = [];
-    let paginaAniv = 1;
-    let paginaCupons = 1;
+<script>
 
-    function toISO(date) { return date.toISOString().split('T')[0]; }
-    function hoje() { return new Date(); }
+const SUPABASE_URL = CONFIG.SUPABASE_URL;
+const SUPABASE_ANON_KEY = CONFIG.SUPABASE_ANON_KEY;
+const LIMITE = 20;
 
-    function formatarData(iso) {
-      if (!iso) return '-';
-      const [y, m, d] = iso.split('-');
-      return `${d}/${m}/${y}`;
+// 🔐 TOKEN
+async function getToken() {
+  const { data } = await supabaseClient.auth.getSession();
+  return data.session?.access_token;
+}
+
+let todosAniversariantes = [];
+let todosCupons = [];
+let anivFiltrados = [];
+let cuponsFiltrados = [];
+let paginaAniv = 1;
+let paginaCupons = 1;
+
+/* ===================== HELPERS ===================== */
+
+function toISO(date) { return date.toISOString().split('T')[0]; }
+function hoje() { return new Date(); }
+
+function formatarData(iso) {
+  if (!iso) return '-';
+  const [y,m,d] = iso.split('-');
+  return `${d}/${m}/${y}`;
+}
+
+function isMorador(valor) {
+  return String(valor || '').toLowerCase().includes('morador');
+}
+
+/* ===================== FETCH COM TOKEN ===================== */
+
+async function fetchComAuth(url) {
+
+  const token = await getToken();
+
+  if (!token) {
+    alert("Sessão expirada. Faça login novamente.");
+    window.location.href = "index.html";
+    return [];
+  }
+
+  const res = await fetch(url, {
+    headers: {
+      apikey: SUPABASE_ANON_KEY,
+      Authorization: `Bearer ${token}`
     }
+  });
 
-    function isMorador(valor) {
-      return String(valor || '').toLowerCase().includes('morador');
-    }
+  return await res.json();
+}
 
-    function isEstaSemana(dateStr) {
-      const d = new Date(dateStr);
-      const ini = hoje(); ini.setHours(0,0,0,0);
-      const fim = new Date(ini); fim.setDate(fim.getDate() + 6); fim.setHours(23,59,59,999);
-      return d >= ini && d <= fim;
-    }
+/* ===================== ANIVERSARIANTES ===================== */
 
-    function btnWhatsApp(telefone, mensagem) {
-      const num = (telefone || '').replace(/[^0-9]/g, '');
-      if (!num) return '-';
-      const url = `https://wa.me/55${num}?text=${encodeURIComponent(mensagem)}`;
-      return `<a href="${url}" target="_blank" class="btn btn-sm btn-success"><i class="bi bi-whatsapp"></i></a>`;
-    }
+async function carregarAniversariantes() {
 
-    // =====================
-    // INICIALIZAR FILTROS
-    // =====================
-    function inicializarFiltros() {
-      const h = hoje();
+  const mes = String(document.getElementById('anivMes').value).padStart(2, '0');
 
-      // Aniversariantes: mês/ano atual
-      document.getElementById('anivMes').value = h.getMonth() + 1;
+  const dados = await fetchComAuth(
+    `${SUPABASE_URL}/rest/v1/feedback_detalhado?select=nome,telefone,data_nascimento,morador&data_nascimento=not.is.null`
+  );
 
-      const selAno = document.getElementById('anivAno');
-      for (let a = h.getFullYear(); a >= h.getFullYear() - 2; a--) {
-        const opt = document.createElement('option');
-        opt.value = a; opt.textContent = a;
-        selAno.appendChild(opt);
-      }
-      selAno.value = h.getFullYear();
+  todosAniversariantes = dados
+    .filter(c => c.data_nascimento?.slice(5,7) === mes)
+    .sort((a,b) => parseInt(a.data_nascimento.slice(8,10)) - parseInt(b.data_nascimento.slice(8,10)));
 
-      // Cupons: início do mês até fim do mês
-      const inicioMes = new Date(h.getFullYear(), h.getMonth(), 1);
-      const fimMes = new Date(h.getFullYear(), h.getMonth() + 1, 0);
-      document.getElementById('cuponsDataInicio').value = toISO(inicioMes);
-      document.getElementById('cuponsDataFim').value = toISO(fimMes);
-    }
+  aplicarFiltroAniv();
+}
 
-    // =====================
-    // FILTROS
-    // =====================
-    function aplicarFiltroAniv() {
-      const soMoradores = document.getElementById('filtroMoradorAniv').checked;
-      anivFiltrados = soMoradores
-        ? todosAniversariantes.filter(c => isMorador(c.morador))
-        : todosAniversariantes;
-      paginaAniv = 1;
-      renderizarAniv();
-    }
+/* ===================== CUPONS ===================== */
 
-    function aplicarFiltroCupons() {
-      const soMoradores = document.getElementById('filtroMoradorCupons').checked;
-      cuponsFiltrados = soMoradores
-        ? todosCupons.filter(c => isMorador(c.morador))
-        : todosCupons;
-      paginaCupons = 1;
-      renderizarCupons();
-    }
+async function carregarCupons() {
 
-    // =====================
-    // RENDERIZAÇÃO
-    // =====================
-    function renderizarAniv() {
-      const dados = anivFiltrados;
-      const total = Math.ceil(dados.length / LIMITE) || 1;
-      const slice = dados.slice((paginaAniv - 1) * LIMITE, paginaAniv * LIMITE);
-      const anoAtual = parseInt(document.getElementById('anivAno').value);
-      const tbody = document.getElementById('tbody-aniversariantes');
-      tbody.innerHTML = '';
+  const ini = document.getElementById('cuponsDataInicio').value;
+  const fim = document.getElementById('cuponsDataFim').value;
 
-      document.getElementById('resumoAniversariantes').textContent =
-        `${dados.length} aniversariante(s) encontrado(s)`;
+  const cupons = await fetchComAuth(
+    `${SUPABASE_URL}/rest/v1/cupons?select=codigo,cliente_nome,cliente_telefone,valido_ate&valido_ate=gte.${ini}&valido_ate=lte.${fim}&utilizado=is.false&order=valido_ate.asc`
+  );
 
-      if (!slice.length) {
-        tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">Nenhum aniversariante encontrado.</td></tr>';
-      } else {
-        slice.forEach(c => {
-          const anivEsteAno = `${anoAtual}-${c.data_nascimento.slice(5, 10)}`;
-          const estaSemanaBool = isEstaSemana(anivEsteAno);
-          const rowClass = estaSemanaBool ? 'table-warning' : '';
-          const msg = `Olá ${c.nome?.split(' ')[0]}! 🎂 A equipe Smash do Cabo deseja um feliz aniversário! Esperamos te ver em breve 🍔`;
-          tbody.innerHTML += `
-            <tr class="${rowClass}">
-              <td>${c.nome || '-'} ${estaSemanaBool ? '<span class="badge bg-warning text-dark ms-1">Esta semana</span>' : ''}</td>
-              <td>${c.telefone || '-'}</td>
-              <td>${formatarData(c.data_nascimento)}</td>
-              <td>${btnWhatsApp(c.telefone, msg)}</td>
-            </tr>`;
-        });
-      }
+  if (!cupons.length) {
+    todosCupons = [];
+    aplicarFiltroCupons();
+    return;
+  }
 
-      document.getElementById('paginaAniv').textContent = `Página ${paginaAniv} de ${total}`;
-      document.getElementById('btnAnteriorAniv').disabled = paginaAniv === 1;
-      document.getElementById('btnProximaAniv').disabled = paginaAniv >= total;
-    }
+  const telefones = [...new Set(cupons.map(c => c.cliente_telefone).filter(Boolean))];
 
-    function renderizarCupons() {
-      const dados = cuponsFiltrados;
-      const total = Math.ceil(dados.length / LIMITE) || 1;
-      const slice = dados.slice((paginaCupons - 1) * LIMITE, paginaCupons * LIMITE);
-      const hojeISO = toISO(hoje());
-      const tbody = document.getElementById('tbody-cupons');
-      tbody.innerHTML = '';
+  const feedbacks = await fetchComAuth(
+    `${SUPABASE_URL}/rest/v1/feedback_detalhado?select=telefone,morador&telefone=in.(${telefones.map(t => `"${t}"`).join(',')})`
+  );
 
-      document.getElementById('resumoCupons').textContent =
-        `${dados.length} cupom(ns) encontrado(s)`;
+  const moradorMap = {};
+  feedbacks.forEach(f => {
+    if (f.telefone) moradorMap[f.telefone.trim()] = f.morador;
+  });
 
-      if (!slice.length) {
-        tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">Nenhum cupom encontrado.</td></tr>';
-      } else {
-        slice.forEach(c => {
-          const venceHoje = c.valido_ate === hojeISO;
-          const rowClass = venceHoje ? 'table-danger' : '';
-          const msg = `Olá ${c.cliente_nome?.split(' ')[0]}! 🎟️ Seu cupom da Smash do Cabo vence ${venceHoje ? 'HOJE' : 'em breve'}! Não esqueça de usar: *${c.codigo}* 🍔`;
-          tbody.innerHTML += `
-            <tr class="${rowClass}">
-              <td>${c.cliente_nome || '-'} ${venceHoje ? '<span class="badge bg-danger ms-1">Vence hoje</span>' : ''}</td>
-              <td>${c.cliente_telefone || '-'}</td>
-              <td><code>${c.codigo}</code></td>
-              <td>${formatarData(c.valido_ate)}</td>
-              <td>${btnWhatsApp(c.cliente_telefone, msg)}</td>
-            </tr>`;
-        });
-      }
+  todosCupons = cupons.map(c => ({
+    ...c,
+    morador: moradorMap[c.cliente_telefone?.trim()] || ''
+  }));
 
-      document.getElementById('paginaCupons').textContent = `Página ${paginaCupons} de ${total}`;
-      document.getElementById('btnAnteriorCupons').disabled = paginaCupons === 1;
-      document.getElementById('btnProximaCupons').disabled = paginaCupons >= total;
-    }
+  aplicarFiltroCupons();
+}
 
-    function mudarPagina(tipo, direcao) {
-      if (tipo === 'aniv') {
-        const total = Math.ceil(anivFiltrados.length / LIMITE) || 1;
-        paginaAniv = Math.min(Math.max(paginaAniv + direcao, 1), total);
-        renderizarAniv();
-      } else {
-        const total = Math.ceil(cuponsFiltrados.length / LIMITE) || 1;
-        paginaCupons = Math.min(Math.max(paginaCupons + direcao, 1), total);
-        renderizarCupons();
-      }
-    }
+/* ===================== RESTO (SEM MUDANÇA) ===================== */
 
-    // =====================
-    // CARREGAR DADOS
-    // =====================
-    async function carregarAniversariantes() {
-      const mes = String(document.getElementById('anivMes').value).padStart(2, '0');
+/* manter tudo igual:
+- renderizarAniv
+- renderizarCupons
+- filtros
+- exportações
+*/
 
-      const res = await fetch(
-        `${SUPABASE_URL}/rest/v1/feedback_detalhado?select=nome,telefone,data_nascimento,morador&data_nascimento=not.is.null`,
-        { headers }
-      );
-      const dados = await res.json();
+const meses = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
 
-      todosAniversariantes = dados
-        .filter(c => c.data_nascimento?.slice(5, 7) === mes)
-        .sort((a, b) => parseInt(a.data_nascimento.slice(8,10)) - parseInt(b.data_nascimento.slice(8,10)));
+document.getElementById('tituloRelatorio').textContent =
+  `Relatórios — ${meses[hoje().getMonth()]} ${hoje().getFullYear()}`;
 
-      aplicarFiltroAniv();
-    }
+inicializarFiltros();
+carregarAniversariantes();
+carregarCupons();
 
-    async function carregarCupons() {
-      const ini = document.getElementById('cuponsDataInicio').value;
-      const fim = document.getElementById('cuponsDataFim').value;
+</script>
 
-      const resCupons = await fetch(
-        `${SUPABASE_URL}/rest/v1/cupons?select=codigo,cliente_nome,cliente_telefone,valido_ate&valido_ate=gte.${ini}&valido_ate=lte.${fim}&utilizado=is.false&order=valido_ate.asc`,
-        { headers }
-      );
-      const cupons = await resCupons.json();
-
-      if (!cupons.length) {
-        todosCupons = [];
-        aplicarFiltroCupons();
-        return;
-      }
-
-      const telefones = [...new Set(cupons.map(c => c.cliente_telefone).filter(Boolean))];
-
-      const resFeedback = await fetch(
-        `${SUPABASE_URL}/rest/v1/feedback_detalhado?select=telefone,morador&telefone=in.(${telefones.map(t => `"${t}"`).join(',')})`,
-        { headers }
-      );
-      const feedbacks = await resFeedback.json();
-
-      const moradorMap = {};
-      feedbacks.forEach(f => {
-        if (f.telefone) moradorMap[f.telefone.trim()] = f.morador;
-      });
-
-      todosCupons = cupons.map(c => ({
-        ...c,
-        morador: moradorMap[c.cliente_telefone?.trim()] || ''
-      }));
-
-      aplicarFiltroCupons();
-    }
-
-    // =====================
-    // EXPORTAR
-    // =====================
-    function exportarPDF() {
-      html2pdf().from(document.querySelector('.conteudo')).set({ filename: 'relatorio-smash.pdf', margin: 10 }).save();
-    }
-
-    function exportarExcel() {
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, XLSX.utils.table_to_sheet(document.getElementById('tabela-aniversariantes')), 'Aniversariantes');
-      XLSX.utils.book_append_sheet(wb, XLSX.utils.table_to_sheet(document.getElementById('tabela-cupons')), 'Cupons');
-      XLSX.writeFile(wb, 'relatorio-smash.xlsx');
-    }
-
-    // =====================
-    // INIT
-    // =====================
-    const meses = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
-    document.getElementById('tituloRelatorio').textContent =
-      `Relatórios — ${meses[hoje().getMonth()]} ${hoje().getFullYear()}`;
-
-    inicializarFiltros();
-    carregarAniversariantes();
-    carregarCupons();
-
-  </script>
 </body>
 </html>
