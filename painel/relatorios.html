@@ -2,268 +2,139 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Relatórios - Smash do Cabo</title>
+  <title>Relatórios</title>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="layout.css">
+  <style>
+    body {
+      font-family: Arial;
+      background: #111;
+      color: #fff;
+      padding: 20px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    th, td {
+      padding: 10px;
+      border-bottom: 1px solid #333;
+      text-align: left;
+    }
+
+    button {
+      background: #25D366;
+      border: none;
+      padding: 8px 12px;
+      color: white;
+      cursor: pointer;
+      border-radius: 6px;
+    }
+
+    .expirando {
+      color: orange;
+    }
+
+    .ativo {
+      color: #00ff88;
+    }
+  </style>
 </head>
 
 <body>
 
-<div id="sidebar-container"></div>
+<h2>Cupons Ativos</h2>
 
-<div class="conteudo">
-
-  <div class="topbar d-flex justify-content-between align-items-center mb-4">
-    <h3>Relatórios</h3>
-    <div class="d-flex gap-2">
-      <button class="btn btn-sm btn-danger" onclick="exportarPDF()">PDF</button>
-      <button class="btn btn-sm btn-success" onclick="exportarExcel()">Excel</button>
-    </div>
-  </div>
-
-  <!-- ================= ANIVERSARIANTES ================= -->
-
-  <div class="card p-3 mb-4">
-
-    <h5 class="mb-3">Aniversariantes</h5>
-
-    <div class="row g-2 mb-3">
-
-      <div class="col-md-2">
-        <select id="anivMes" class="form-select">
-          <option value="01">Janeiro</option>
-          <option value="02">Fevereiro</option>
-          <option value="03">Março</option>
-          <option value="04">Abril</option>
-          <option value="05">Maio</option>
-          <option value="06">Junho</option>
-          <option value="07">Julho</option>
-          <option value="08">Agosto</option>
-          <option value="09">Setembro</option>
-          <option value="10">Outubro</option>
-          <option value="11">Novembro</option>
-          <option value="12">Dezembro</option>
-        </select>
-      </div>
-
-      <div class="col-md-2">
-        <select id="anivAno" class="form-select"></select>
-      </div>
-
-      <div class="col-md-2">
-        <button onclick="carregarAniversariantes()" class="btn btn-primary w-100">
-          Filtrar
-        </button>
-      </div>
-
-    </div>
-
-    <div id="listaAniversariantes"></div>
-
-  </div>
-
-  <!-- ================= CUPONS ================= -->
-
-  <div class="card p-3">
-
-    <h5 class="mb-3">Cupons Ativos</h5>
-
-    <div class="row g-2 mb-3">
-
-      <div class="col-md-3">
-        <input type="date" id="cuponsDataInicio" class="form-control">
-      </div>
-
-      <div class="col-md-3">
-        <input type="date" id="cuponsDataFim" class="form-control">
-      </div>
-
-      <div class="col-md-2">
-        <button onclick="carregarCupons()" class="btn btn-primary w-100">
-          Filtrar
-        </button>
-      </div>
-
-    </div>
-
-    <div id="listaCupons"></div>
-
-  </div>
-
-</div>
-
-<!-- ================= SCRIPTS ================= -->
-
-<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-<script src="config.js"></script>
-<script src="sidebar.js"></script>
+<table>
+  <thead>
+    <tr>
+      <th>Nome</th>
+      <th>Telefone</th>
+      <th>Cupom</th>
+      <th>Validade</th>
+      <th>Ação</th>
+    </tr>
+  </thead>
+  <tbody id="tabela-cupons"></tbody>
+</table>
 
 <script>
+const SUPABASE_URL = CONFIG.SUPABASE_URL
+const SUPABASE_KEY = CONFIG.SUPABASE_KEY
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
 
-const SUPABASE_URL = CONFIG.SUPABASE_URL;
-const SUPABASE_ANON_KEY = CONFIG.SUPABASE_ANON_KEY;
-
-/* ================= TOKEN ================= */
-
-async function getToken() {
-  const { data } = await supabaseClient.auth.getSession();
-  return data.session?.access_token;
-}
-
-async function fetchComAuth(url) {
-
-  const token = await getToken();
-
-  if (!token) {
-    alert("Sessão expirada");
-    window.location.href = "index.html";
-    return [];
-  }
-
-  const res = await fetch(url, {
-    headers: {
-      apikey: SUPABASE_ANON_KEY,
-      Authorization: `Bearer ${token}`
-    }
-  });
-
-  return await res.json();
-}
-
-/* ================= INIT ================= */
-
-function inicializarFiltros() {
-
-  const h = new Date();
-
-  document.getElementById('anivMes').value = String(h.getMonth() + 1).padStart(2,'0');
-
-  const selAno = document.getElementById('anivAno');
-  for (let a = h.getFullYear(); a >= h.getFullYear() - 2; a--) {
-    const opt = document.createElement('option');
-    opt.value = a;
-    opt.textContent = a;
-    selAno.appendChild(opt);
-  }
-
-  selAno.value = h.getFullYear();
-
-  const inicioMes = new Date(h.getFullYear(), h.getMonth(), 1);
-  const fimMes = new Date(h.getFullYear(), h.getMonth() + 1, 0);
-
-  document.getElementById('cuponsDataInicio').value = inicioMes.toISOString().split('T')[0];
-  document.getElementById('cuponsDataFim').value = fimMes.toISOString().split('T')[0];
-}
-
-/* ================= ANIVERSARIANTES ================= */
-
-async function carregarAniversariantes() {
-
-  const mes = document.getElementById('anivMes').value;
-
-  const dados = await fetchComAuth(
-    `${SUPABASE_URL}/rest/v1/feedback_detalhado?select=nome,data_nascimento`
-  );
-
-  const filtrados = dados.filter(d => d.data_nascimento?.slice(5,7) === mes);
-
-  const div = document.getElementById("listaAniversariantes");
-
-  let html = `
-  <table class="table table-striped table-sm">
-    <thead>
-      <tr>
-        <th>Nome</th>
-        <th>Data</th>
-      </tr>
-    </thead>
-    <tbody>
-  `;
-
-  filtrados.forEach(c => {
-    html += `
-      <tr>
-        <td>${c.nome}</td>
-        <td>${c.data_nascimento}</td>
-      </tr>
-    `;
-  });
-
-  html += "</tbody></table>";
-
-  div.innerHTML = html;
-}
-
-/* ================= CUPONS ================= */
+document.addEventListener("DOMContentLoaded", () => {
+  carregarCupons()
+})
 
 async function carregarCupons() {
+  const hoje = new Date().toISOString()
 
-  const ini = document.getElementById('cuponsDataInicio').value;
-  const fim = document.getElementById('cuponsDataFim').value;
+  const { data, error } = await supabase
+    .from("feedback_detalhado")
+    .select("*")
+    .eq("cupom_usado", false)
+    .gt("validade_cupom", hoje)
 
-  const dados = await fetchComAuth(
-    `${SUPABASE_URL}/rest/v1/cupons?select=codigo,cliente_nome,cliente_telefone,valido_ate&valido_ate=gte.${ini}&valido_ate=lte.${fim}`
-  );
-
-  console.log("CUPONS:", dados);
-
-  const div = document.getElementById("listaCupons");
-
-  if (!dados.length) {
-    div.innerHTML = `<p class="text-muted">Nenhum cupom encontrado</p>`;
-    return;
+  if (error) {
+    console.error("Erro:", error)
+    return
   }
 
-  let html = `
-  <table class="table table-striped table-sm">
-    <thead>
-      <tr>
-        <th>Código</th>
-        <th>Cliente</th>
-        <th>Telefone</th>
-        <th>Validade</th>
-      </tr>
-    </thead>
-    <tbody>
-  `;
-
-  dados.forEach(c => {
-    html += `
-      <tr>
-        <td>${c.codigo}</td>
-        <td>${c.cliente_nome || '-'}</td>
-        <td>${c.cliente_telefone || '-'}</td>
-        <td>${c.valido_ate || '-'}</td>
-      </tr>
-    `;
-  });
-
-  html += "</tbody></table>";
-
-  div.innerHTML = html;
+  renderTabela(data)
 }
 
-/* ================= EXPORT ================= */
+function renderTabela(lista) {
+  const tbody = document.getElementById("tabela-cupons")
 
-function exportarPDF() {
-  html2pdf().from(document.querySelector('.conteudo')).save();
+  if (!tbody) {
+    console.error("Tabela não encontrada")
+    return
+  }
+
+  tbody.innerHTML = ""
+
+  lista.forEach(item => {
+    const tr = document.createElement("tr")
+
+    const validade = new Date(item.validade_cupom)
+    const hoje = new Date()
+    const diffDias = Math.ceil((validade - hoje) / (1000 * 60 * 60 * 24))
+
+    let classe = "ativo"
+    if (diffDias <= 3) classe = "expirando"
+
+    tr.innerHTML = `
+      <td>${item.nome || "-"}</td>
+      <td>${item.telefone || "-"}</td>
+      <td>${item.cupom || "-"}</td>
+      <td class="${classe}">${validade.toLocaleDateString()}</td>
+      <td>
+        <button onclick="enviarWhats('${item.telefone}', '${item.nome}', '${item.cupom}')">
+          Whats
+        </button>
+      </td>
+    `
+
+    tbody.appendChild(tr)
+  })
 }
 
-function exportarExcel() {
-  const wb = XLSX.utils.book_new();
-  XLSX.writeFile(wb, 'relatorio.xlsx');
+function enviarWhats(telefone, nome, cupom) {
+  if (!telefone) return
+
+  const msg = `Olá ${nome}! 🎉 Seu cupom ${cupom} está ativo! Aproveite antes de expirar 😉`
+
+  const numero = telefone.replace(/\D/g, "")
+
+  const url = `https://wa.me/55${numero}?text=${encodeURIComponent(msg)}`
+
+  window.open(url, "_blank")
 }
-
-/* ================= START ================= */
-
-inicializarFiltros();
-carregarAniversariantes();
-carregarCupons();
-
 </script>
 
 </body>
