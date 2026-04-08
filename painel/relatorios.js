@@ -48,8 +48,30 @@ function inicializar() {
   document.getElementById('tituloRelatorio').innerText =
     `Relatórios — ${h.getFullYear()}`;
 
-  document.getElementById('anivMes').value = h.getMonth() + 1;
+  const meses = [
+    "Janeiro","Fevereiro","Março","Abril","Maio","Junho",
+    "Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"
+  ];
 
+  const selectMes = document.getElementById('anivMes');
+
+  // cria meses se não existir
+  if (selectMes.options.length === 0) {
+    meses.forEach((m, i) => {
+      const opt = document.createElement('option');
+      opt.value = i + 1;
+      opt.textContent = m;
+      selectMes.appendChild(opt);
+    });
+  }
+
+  // seta mês atual
+  selectMes.value = h.getMonth() + 1;
+
+  // evento automático ao trocar mês
+  selectMes.addEventListener('change', carregarAniversariantes);
+
+  // datas cupons
   const inicio = new Date(h.getFullYear(), h.getMonth(), 1);
   const fim = new Date(h.getFullYear(), h.getMonth() + 1, 0);
 
@@ -76,7 +98,8 @@ async function carregarAniversariantes() {
 
   const dados = await res.json();
 
-  console.log("DEBUG ANIV:", dados); // 👈 IMPORTANTE
+  console.log("MES:", mes);
+  console.log("TOTAL REGISTROS:", dados.length);
 
   anivDados = dados.filter(d => {
     if (!d.data_nascimento) return false;
@@ -194,7 +217,8 @@ function exportarPDF() {
 
 function exportarExcel() {
   const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb,
+  XLSX.utils.book_append_sheet(
+    wb,
     XLSX.utils.table_to_sheet(document.querySelector('#tbody-cupons').closest('table')),
     'Cupons'
   );
