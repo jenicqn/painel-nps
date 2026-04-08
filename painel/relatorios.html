@@ -8,7 +8,6 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
   <link rel="stylesheet" href="layout.css">
 </head>
 
@@ -26,22 +25,86 @@
     </div>
   </div>
 
-  <!-- conteúdo mantido -->
+  <!-- 🔥 FILTRO ANIVERSARIANTES -->
+  <div class="card p-3 mb-4">
+
+    <h5 class="mb-3">Aniversariantes</h5>
+
+    <div class="row g-2 mb-3">
+
+      <div class="col-md-2">
+        <select id="anivMes" class="form-select">
+          <option value="01">Janeiro</option>
+          <option value="02">Fevereiro</option>
+          <option value="03">Março</option>
+          <option value="04">Abril</option>
+          <option value="05">Maio</option>
+          <option value="06">Junho</option>
+          <option value="07">Julho</option>
+          <option value="08">Agosto</option>
+          <option value="09">Setembro</option>
+          <option value="10">Outubro</option>
+          <option value="11">Novembro</option>
+          <option value="12">Dezembro</option>
+        </select>
+      </div>
+
+      <div class="col-md-2">
+        <select id="anivAno" class="form-select"></select>
+      </div>
+
+      <div class="col-md-2">
+        <button onclick="carregarAniversariantes()" class="btn btn-primary w-100">
+          Filtrar
+        </button>
+      </div>
+
+    </div>
+
+    <div id="listaAniversariantes"></div>
+
+  </div>
+
+  <!-- 🔥 FILTRO CUPONS -->
+  <div class="card p-3">
+
+    <h5 class="mb-3">Cupons Ativos</h5>
+
+    <div class="row g-2 mb-3">
+
+      <div class="col-md-3">
+        <input type="date" id="cuponsDataInicio" class="form-control">
+      </div>
+
+      <div class="col-md-3">
+        <input type="date" id="cuponsDataFim" class="form-control">
+      </div>
+
+      <div class="col-md-2">
+        <button onclick="carregarCupons()" class="btn btn-primary w-100">
+          Filtrar
+        </button>
+      </div>
+
+    </div>
+
+    <div id="listaCupons"></div>
+
+  </div>
 
 </div>
 
-<!-- SCRIPTS -->
+<!-- 🔥 SCRIPTS -->
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <script src="config.js"></script>
 <script src="sidebar.js"></script>
 
 <script>
 
-/* ======================================================= */
+/* ================= CONFIG ================= */
 
 const SUPABASE_URL = CONFIG.SUPABASE_URL;
 const SUPABASE_ANON_KEY = CONFIG.SUPABASE_ANON_KEY;
-const LIMITE = 20;
 
 /* ================= TOKEN ================= */
 
@@ -51,11 +114,10 @@ async function getToken() {
 }
 
 async function fetchComAuth(url) {
-
   const token = await getToken();
 
   if (!token) {
-    alert("Sessão expirada. Faça login novamente.");
+    alert("Sessão expirada");
     window.location.href = "index.html";
     return [];
   }
@@ -76,31 +138,15 @@ function toISO(date) {
   return date.toISOString().split('T')[0];
 }
 
-function hoje() {
-  return new Date();
-}
-
-function formatarData(iso) {
-  if (!iso) return '-';
-  const [y,m,d] = iso.split('-');
-  return `${d}/${m}/${y}`;
-}
-
-function isMorador(valor) {
-  return String(valor || '').toLowerCase().includes('morador');
-}
-
 /* ================= FILTROS ================= */
 
 function inicializarFiltros() {
 
-  const h = hoje();
+  const h = new Date();
 
-  document.getElementById('anivMes').value = h.getMonth() + 1;
+  document.getElementById('anivMes').value = String(h.getMonth() + 1).padStart(2,'0');
 
   const selAno = document.getElementById('anivAno');
-  selAno.innerHTML = "";
-
   for (let a = h.getFullYear(); a >= h.getFullYear() - 2; a--) {
     const opt = document.createElement('option');
     opt.value = a;
@@ -117,25 +163,24 @@ function inicializarFiltros() {
   document.getElementById('cuponsDataFim').value = toISO(fimMes);
 }
 
-/* ================= VARIÁVEIS ================= */
-
-let todosAniversariantes = [];
-let todosCupons = [];
-
 /* ================= ANIVERSARIANTES ================= */
 
 async function carregarAniversariantes() {
 
-  const mes = String(document.getElementById('anivMes').value).padStart(2, '0');
+  const mes = document.getElementById('anivMes').value;
 
   const dados = await fetchComAuth(
-    `${SUPABASE_URL}/rest/v1/feedback_detalhado?select=nome,telefone,data_nascimento,morador&data_nascimento=not.is.null`
+    `${SUPABASE_URL}/rest/v1/feedback_detalhado?select=nome,data_nascimento`
   );
 
-  todosAniversariantes = dados
-    .filter(c => c.data_nascimento?.slice(5,7) === mes);
+  const filtrados = dados.filter(d => d.data_nascimento?.slice(5,7) === mes);
 
-  console.log("ANIVERSARIANTES:", todosAniversariantes);
+  const div = document.getElementById("listaAniversariantes");
+  div.innerHTML = "";
+
+  filtrados.forEach(c => {
+    div.innerHTML += `<div>${c.nome} - ${c.data_nascimento}</div>`;
+  });
 }
 
 /* ================= CUPONS ================= */
@@ -145,17 +190,22 @@ async function carregarCupons() {
   const ini = document.getElementById('cuponsDataInicio').value;
   const fim = document.getElementById('cuponsDataFim').value;
 
-  const cupons = await fetchComAuth(
-    `${SUPABASE_URL}/rest/v1/cupons?select=codigo,cliente_nome,cliente_telefone,valido_ate&valido_ate=gte.${ini}&valido_ate=lte.${fim}&utilizado=is.false`
+  const dados = await fetchComAuth(
+    `${SUPABASE_URL}/rest/v1/cupons?select=codigo,cliente_nome,valido_ate&valido_ate=gte.${ini}&valido_ate=lte.${fim}`
   );
 
-  console.log("CUPONS:", cupons);
+  const div = document.getElementById("listaCupons");
+  div.innerHTML = "";
+
+  dados.forEach(c => {
+    div.innerHTML += `<div>${c.codigo} - ${c.cliente_nome}</div>`;
+  });
 }
 
 /* ================= EXPORT ================= */
 
 function exportarPDF() {
-  html2pdf().from(document.querySelector('.conteudo')).save('relatorio.pdf');
+  html2pdf().from(document.querySelector('.conteudo')).save();
 }
 
 function exportarExcel() {
@@ -165,10 +215,8 @@ function exportarExcel() {
 
 /* ================= INIT ================= */
 
-const meses = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
-
 document.getElementById('tituloRelatorio').textContent =
-  `Relatórios — ${meses[hoje().getMonth()]} ${hoje().getFullYear()}`;
+  `Relatórios`;
 
 inicializarFiltros();
 carregarAniversariantes();
