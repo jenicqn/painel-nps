@@ -18,14 +18,15 @@
 <div class="conteudo">
 
   <div class="topbar d-flex justify-content-between align-items-center mb-4">
-    <h3 id="tituloRelatorio">Relatórios</h3>
+    <h3>Relatórios</h3>
     <div class="d-flex gap-2">
       <button class="btn btn-sm btn-danger" onclick="exportarPDF()">PDF</button>
       <button class="btn btn-sm btn-success" onclick="exportarExcel()">Excel</button>
     </div>
   </div>
 
-  <!-- 🔥 FILTRO ANIVERSARIANTES -->
+  <!-- ================= ANIVERSARIANTES ================= -->
+
   <div class="card p-3 mb-4">
 
     <h5 class="mb-3">Aniversariantes</h5>
@@ -65,7 +66,8 @@
 
   </div>
 
-  <!-- 🔥 FILTRO CUPONS -->
+  <!-- ================= CUPONS ================= -->
+
   <div class="card p-3">
 
     <h5 class="mb-3">Cupons Ativos</h5>
@@ -94,14 +96,13 @@
 
 </div>
 
-<!-- 🔥 SCRIPTS -->
+<!-- ================= SCRIPTS ================= -->
+
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <script src="config.js"></script>
 <script src="sidebar.js"></script>
 
 <script>
-
-/* ================= CONFIG ================= */
 
 const SUPABASE_URL = CONFIG.SUPABASE_URL;
 const SUPABASE_ANON_KEY = CONFIG.SUPABASE_ANON_KEY;
@@ -114,6 +115,7 @@ async function getToken() {
 }
 
 async function fetchComAuth(url) {
+
   const token = await getToken();
 
   if (!token) {
@@ -132,13 +134,7 @@ async function fetchComAuth(url) {
   return await res.json();
 }
 
-/* ================= HELPERS ================= */
-
-function toISO(date) {
-  return date.toISOString().split('T')[0];
-}
-
-/* ================= FILTROS ================= */
+/* ================= INIT ================= */
 
 function inicializarFiltros() {
 
@@ -159,8 +155,8 @@ function inicializarFiltros() {
   const inicioMes = new Date(h.getFullYear(), h.getMonth(), 1);
   const fimMes = new Date(h.getFullYear(), h.getMonth() + 1, 0);
 
-  document.getElementById('cuponsDataInicio').value = toISO(inicioMes);
-  document.getElementById('cuponsDataFim').value = toISO(fimMes);
+  document.getElementById('cuponsDataInicio').value = inicioMes.toISOString().split('T')[0];
+  document.getElementById('cuponsDataFim').value = fimMes.toISOString().split('T')[0];
 }
 
 /* ================= ANIVERSARIANTES ================= */
@@ -176,11 +172,30 @@ async function carregarAniversariantes() {
   const filtrados = dados.filter(d => d.data_nascimento?.slice(5,7) === mes);
 
   const div = document.getElementById("listaAniversariantes");
-  div.innerHTML = "";
+
+  let html = `
+  <table class="table table-striped table-sm">
+    <thead>
+      <tr>
+        <th>Nome</th>
+        <th>Data</th>
+      </tr>
+    </thead>
+    <tbody>
+  `;
 
   filtrados.forEach(c => {
-    div.innerHTML += `<div>${c.nome} - ${c.data_nascimento}</div>`;
+    html += `
+      <tr>
+        <td>${c.nome}</td>
+        <td>${c.data_nascimento}</td>
+      </tr>
+    `;
   });
+
+  html += "</tbody></table>";
+
+  div.innerHTML = html;
 }
 
 /* ================= CUPONS ================= */
@@ -191,15 +206,45 @@ async function carregarCupons() {
   const fim = document.getElementById('cuponsDataFim').value;
 
   const dados = await fetchComAuth(
-    `${SUPABASE_URL}/rest/v1/cupons?select=codigo,cliente_nome,valido_ate&valido_ate=gte.${ini}&valido_ate=lte.${fim}`
+    `${SUPABASE_URL}/rest/v1/cupons?select=codigo,cliente_nome,cliente_telefone,valido_ate&valido_ate=gte.${ini}&valido_ate=lte.${fim}`
   );
 
+  console.log("CUPONS:", dados);
+
   const div = document.getElementById("listaCupons");
-  div.innerHTML = "";
+
+  if (!dados.length) {
+    div.innerHTML = `<p class="text-muted">Nenhum cupom encontrado</p>`;
+    return;
+  }
+
+  let html = `
+  <table class="table table-striped table-sm">
+    <thead>
+      <tr>
+        <th>Código</th>
+        <th>Cliente</th>
+        <th>Telefone</th>
+        <th>Validade</th>
+      </tr>
+    </thead>
+    <tbody>
+  `;
 
   dados.forEach(c => {
-    div.innerHTML += `<div>${c.codigo} - ${c.cliente_nome}</div>`;
+    html += `
+      <tr>
+        <td>${c.codigo}</td>
+        <td>${c.cliente_nome || '-'}</td>
+        <td>${c.cliente_telefone || '-'}</td>
+        <td>${c.valido_ate || '-'}</td>
+      </tr>
+    `;
   });
+
+  html += "</tbody></table>";
+
+  div.innerHTML = html;
 }
 
 /* ================= EXPORT ================= */
@@ -213,10 +258,7 @@ function exportarExcel() {
   XLSX.writeFile(wb, 'relatorio.xlsx');
 }
 
-/* ================= INIT ================= */
-
-document.getElementById('tituloRelatorio').textContent =
-  `Relatórios`;
+/* ================= START ================= */
 
 inicializarFiltros();
 carregarAniversariantes();
