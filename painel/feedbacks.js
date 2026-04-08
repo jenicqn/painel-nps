@@ -9,6 +9,13 @@ const SUPABASE_ANON_KEY = CONFIG.SUPABASE_ANON_KEY;
 /* ======================================================= */
 
 
+// 🔐 FUNÇÃO PARA PEGAR TOKEN DA SESSÃO (ADICIONADO)
+async function getToken() {
+  const { data } = await supabase.auth.getSession();
+  return data.session?.access_token;
+}
+
+
 let pagina = 1;
 const limite = 50;
 let dadosAtuais = [];
@@ -54,10 +61,21 @@ async function aplicarFiltro() {
   if (dataInicio) query += `&created_at=gte.${dataInicio}`;
   if (dataFim) query += `&created_at=lte.${dataFim}`;
 
+  // 🔐 PEGAR TOKEN REAL DO USUÁRIO
+  const token = await getToken();
+
+  // 🚨 SE NÃO ESTIVER LOGADO, BLOQUEIA
+  if (!token) {
+    console.error("Usuário não autenticado");
+    alert("Sessão expirada. Faça login novamente.");
+    window.location.href = "index.html";
+    return;
+  }
+
   const res = await fetch(query, {
     headers: {
       apikey: SUPABASE_ANON_KEY,
-      Authorization: `Bearer ${SUPABASE_ANON_KEY}`
+      Authorization: `Bearer ${token}`
     }
   });
 
@@ -68,23 +86,23 @@ async function aplicarFiltro() {
 
   if (morador) {
 
-  dados = dados.filter(d => {
+    dados = dados.filter(d => {
 
-    const valorBanco = String(d.morador || "")
-      .toLowerCase()
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, ""); // remove acentos
+      const valorBanco = String(d.morador || "")
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "");
 
-    const valorFiltro = morador
-      .toLowerCase()
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "");
+      const valorFiltro = morador
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "");
 
-    return valorBanco.includes(valorFiltro);
+      return valorBanco.includes(valorFiltro);
 
-  });
+    });
 
-}
+  }
 
   dadosAtuais = dados;
 
@@ -188,6 +206,7 @@ function atualizarResumo(dados) {
 /* =========================
    TABELA
 ========================= */
+
 function formatarMorador(valor) {
 
   const texto = String(valor).toLowerCase();
