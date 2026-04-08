@@ -17,7 +17,6 @@
       <h3>Clientes</h3>
     </div>
 
-    <!-- FILTROS -->
     <div class="card p-3 mb-3">
       <div class="row g-2 align-items-end">
 
@@ -76,7 +75,6 @@
       </div>
     </div>
 
-    <!-- PAGINAÇÃO -->
     <div class="d-flex justify-content-between align-items-center mt-3">
       <button class="btn btn-secondary" id="btnAnterior" onclick="mudarPagina(-1)">Anterior</button>
       <span id="paginaAtual"></span>
@@ -85,14 +83,21 @@
 
   </div>
 
+  <!-- 🔥 ORDEM CORRETA -->
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
   <script src="config.js"></script>
   <script src="sidebar.js"></script>
+
   <script>
     const LIMITE = 30;
     let pagina = 1;
     let dadosAtuais = [];
 
-    // Preenche o select de anos (últimos 3 anos)
+    async function getToken() {
+      const { data } = await supabaseClient.auth.getSession();
+      return data.session?.access_token;
+    }
+
     function preencherAnos() {
       const anoAtual = new Date().getFullYear();
       const sel = document.getElementById('filtroAno');
@@ -104,7 +109,6 @@
       }
     }
 
-    // Define mês/ano atual como padrão
     function definirMesAtual() {
       const hoje = new Date();
       document.getElementById('filtroMes').value = hoje.getMonth() + 1;
@@ -117,32 +121,35 @@
       const nome = document.getElementById('buscarNome').value.trim().toLowerCase();
 
       const inicio = `${ano}-${mes}-01`;
-      const fim = new Date(ano, mes, 1).toISOString().split('T')[0]; // primeiro dia do próximo mês
+      const fim = new Date(ano, mes, 1).toISOString().split('T')[0];
 
-      try {
-        const res = await fetch(
-          `${CONFIG.SUPABASE_URL}/rest/v1/feedback_detalhado?select=id,nome,email,telefone,data_nascimento,created_at&created_at=gte.${inicio}&created_at=lt.${fim}&order=created_at.desc`,
-          {
-            headers: {
-              apikey: CONFIG.SUPABASE_ANON_KEY,
-              Authorization: `Bearer ${CONFIG.SUPABASE_ANON_KEY}`
-            }
-          }
-        );
+      const token = await getToken();
 
-        let dados = await res.json();
-
-        if (nome) {
-          dados = dados.filter(d => d.nome?.toLowerCase().includes(nome));
-        }
-
-        dadosAtuais = dados;
-        pagina = 1;
-        renderizar();
-
-      } catch (err) {
-        console.error("Erro ao carregar clientes:", err);
+      if (!token) {
+        alert("Sessão expirada. Faça login novamente.");
+        window.location.href = "index.html";
+        return;
       }
+
+      const res = await fetch(
+        `${CONFIG.SUPABASE_URL}/rest/v1/feedback_detalhado?select=id,nome,email,telefone,data_nascimento,created_at&created_at=gte.${inicio}&created_at=lt.${fim}&order=created_at.desc`,
+        {
+          headers: {
+            apikey: CONFIG.SUPABASE_ANON_KEY,
+            Authorization: `Bearer ${token}`
+          }
+        }
+      );
+
+      let dados = await res.json();
+
+      if (nome) {
+        dados = dados.filter(d => d.nome?.toLowerCase().includes(nome));
+      }
+
+      dadosAtuais = dados;
+      pagina = 1;
+      renderizar();
     }
 
     function renderizar() {
@@ -177,14 +184,14 @@
           <td>${cli.data_nascimento || '-'}</td>
           <td>${new Date(cli.created_at).toLocaleDateString('pt-BR')}</td>
           <td>
-            <button onclick="editarCliente(${cli.id})" class="btn btn-sm btn-primary me-1" title="Editar">
-              <i class="bi bi-pencil"></i>
+            <button onclick="editarCliente(${cli.id})" class="btn btn-sm btn-primary me-1">
+              ✏️
             </button>
-            <a href="https://wa.me/55${cli.telefone?.replace(/[^0-9]/g, '')}" target="_blank" class="btn btn-sm btn-success me-1" title="WhatsApp">
-              <i class="bi bi-whatsapp"></i>
+            <a href="https://wa.me/55${cli.telefone?.replace(/[^0-9]/g, '')}" target="_blank" class="btn btn-sm btn-success me-1">
+              WhatsApp
             </a>
-            <button onclick="excluirCliente(${cli.id})" class="btn btn-sm btn-danger" title="Excluir">
-              <i class="bi bi-trash"></i>
+            <button onclick="excluirCliente(${cli.id})" class="btn btn-sm btn-danger">
+              🗑️
             </button>
           </td>
         `;
@@ -205,13 +212,15 @@
     async function excluirCliente(id) {
       if (!confirm("Tem certeza que deseja excluir este cliente?")) return;
 
+      const token = await getToken();
+
       const res = await fetch(
         `${CONFIG.SUPABASE_URL}/rest/v1/feedback_detalhado?id=eq.${id}`,
         {
           method: 'DELETE',
           headers: {
             apikey: CONFIG.SUPABASE_ANON_KEY,
-            Authorization: `Bearer ${CONFIG.SUPABASE_ANON_KEY}`
+            Authorization: `Bearer ${token}`
           }
         }
       );
@@ -224,7 +233,6 @@
       }
     }
 
-    // Inicializa
     preencherAnos();
     definirMesAtual();
     aplicarFiltro();
